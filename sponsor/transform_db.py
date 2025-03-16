@@ -27,9 +27,9 @@ class TransformDB:
         print(f"✅ {self.csv_path} is transformed.")
         return df
     
-    def save_as_sqlite(self, df):
+    def save_as_sqlite(self, df, db_path):
         """Save DataFrame to SQLite"""
-        with sqlite3.connect(self.db_path) as conn:
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
 
             # Check if table exists and fetch previous applied data
@@ -56,11 +56,11 @@ class TransformDB:
             # Clear old data and insert new
             cursor.execute("DELETE FROM sponsors")
             df.to_sql("sponsors", conn, if_exists="append", index=False)
-        print(f"✅ Data saved to {self.db_path}")
+        print(f"✅ Data saved to {db_path}")
 
 if __name__ == "__main__":
     transform = TransformDB()
     df = transform.clean_and_transform_csv()
     print(df.head())
     # print(df["organisation_name"].unique()[:10])
-    transform.save_as_sqlite(df)
+    transform.save_as_sqlite(df, transform.db_path)

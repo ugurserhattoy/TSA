@@ -15,7 +15,7 @@ class DataManager:
 
         transform_db = TransformDB()
         df = transform_db.clean_and_transform_csv()
-        transform_db.save_as_sqlite(df)
+        transform_db.save_as_sqlite(df, self.db_path)
 
         self.conn = sqlite3.connect(self.db_path)
         return self.conn
