@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import sqlite3
+from TSA.config import CSV_PATH, DB_PATH
 
 # df = pd.read_csv("sponsors.csv", header=0)
 # print(df.columns)
@@ -8,7 +9,7 @@ import sqlite3
 # print(df.columns)
 
 class TransformDB:
-    def __init__(self, csv_path="data/sponsors.csv", db_path="data/sponsorship.db"):
+    def __init__(self, csv_path=CSV_PATH, db_path=DB_PATH):
         """Initial definitions"""
         self.csv_path = csv_path
         self.db_path = db_path

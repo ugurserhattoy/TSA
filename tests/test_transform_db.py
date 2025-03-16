@@ -1,12 +1,14 @@
 import os, pytest, sqlite3
 from sponsor.transform_db import TransformDB
 # import pandas as pd
+from TSA.config import DB_PATH as db_path
+from TSA.config import CSV_PATH as csv_path
 
 @pytest.fixture
 def transform_db():
     """Fresh transform DB instance for each test"""
-    db_path = "data/test_sponsorship.db"
-    csv_path = "data/sponsors.csv"
+    # db_path = "data/test_sponsorship.db"
+    # csv_path = "data/sponsors.csv"
 
     if os.path.exists(db_path):
         os.remove(db_path)

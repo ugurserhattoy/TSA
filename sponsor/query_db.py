@@ -1,7 +1,8 @@
 import sqlite3, os
+from TSA.config import DB_PATH
 
 class QueryDB:
-    def __init__(self, db_path="data/sponsorship.db"):
+    def __init__(self, db_path=DB_PATH):
         """Initial definitions"""
         self.db_path = db_path
         if not os.path.exists(self.db_path):

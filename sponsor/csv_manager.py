@@ -2,12 +2,13 @@ from datetime import datetime
 import os
 import requests
 from bs4 import BeautifulSoup
+from TSA.config import CSV_PATH, DATA_DIR
 
 class CSVManager:
-    def __init__(self, csv_dir="data", csv_name="sponsors.csv"):
+    def __init__(self):
         """Defines initial file path and url"""
-        self.csv_dir = csv_dir
-        self.csv_file = os.path.join(csv_dir, csv_name)
+        self.csv_dir = DATA_DIR
+        self.csv_file = CSV_PATH
         self.uk_sponsors_url = "https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers"
 
         os.makedirs(self.csv_dir, exist_ok=True)

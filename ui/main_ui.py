@@ -1,34 +1,26 @@
 import sys, os
-import sqlite3
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
     QLineEdit, QPushButton, QHBoxLayout, QCheckBox, QLabel, QHeaderView
 )
 from PyQt6.QtCore import Qt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from sponsor.csv_manager import CSVManager
-from sponsor.transform_db import TransformDB
-
-DB_PATH = "data/sponsorship.db"
+from TSA.ui.table_manager import TableManager
+from TSA.ui.data_manager import DataManager
+from TSA.ui.navigation_manager import NavigationManager
+from TSA.config import DB_PATH
 
 class TSAApp(QWidget):
     def __init__(self):
+        print("Database path:", DB_PATH)
         super().__init__()
-        self.init_data()
+        self.data_manager = DataManager()
+        self.conn = self.data_manager.prepare_database()
         # Initialize TableManager before UI
         self.table_manager = TableManager()
         
         self.initUI()
-        self.table_manager.setup_table(self.layout)
         self.load_data_page()
-
-    def init_data(self):
-        csv_manager = CSVManager()
-        csv_manager.download_csv()
-        transform_db = TransformDB()
-        df = transform_db.clean_and_transform_csv()
-        transform_db.save_as_sqlite(df)
-        self.conn = sqlite3.connect(transform_db.db_path)
 
     def initUI(self):
         self.setWindowTitle("TSA - Track Sponsored Applications")
@@ -57,28 +49,24 @@ class TSAApp(QWidget):
 
         self.layout.addLayout(self.filter_layout)
 
-        # Navigation Buttons
-        self.page_info_label = QLabel("Page 1 of 1")
-        self.next_button = QPushButton("Next Page")
-        self.prev_button = QPushButton("Previous Page")
-        self.prev_button.clicked.connect(self.load_prev_page)
-        self.next_button.clicked.connect(self.load_next_page)
-        self.result_count_label = QLabel("")
-        nav_layout = QHBoxLayout()
-        nav_layout.addWidget(self.prev_button)
-        nav_layout.addStretch()
-        nav_layout.addWidget(self.page_info_label)
-        nav_layout.addStretch()
-        nav_layout.addWidget(self.next_button)
-        self.layout.addLayout(nav_layout)
-        self.layout.addWidget(self.result_count_label)
+        self.configure_table()
+
+        # Navigation
+        self.navigation_manager = NavigationManager(
+            self.layout,
+            # self.apply_filter,
+            self.load_next_page,
+            self.load_prev_page
+        )
+
+    def configure_table(self):
         self.table_manager.table.verticalHeader().setVisible(True)
         self.table_manager.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-
         self.table_manager.table.setWordWrap(False)
         self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.table_manager.table.verticalHeader().setDefaultSectionSize(24)
         self.table_manager.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.layout.addWidget(self.table_manager.table)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -135,8 +123,11 @@ class TSAApp(QWidget):
         cursor = self.conn.cursor()
         cursor.execute(query, params)
         rows = cursor.fetchall()
-
+        print("ROWS FETCHED:", rows)
         self.table_manager.table.setRowCount(len(rows))
+
+        self.table_manager.table.setColumnCount(6)
+        self.table_manager.table.setHorizontalHeaderLabels(["Organisation", "City", "County", "Type & Rating", "Route", "Applied"])
 
         for row_idx, row_data in enumerate(rows):
             for col_idx, value in enumerate(row_data[:-1]):
@@ -146,11 +137,10 @@ class TSAApp(QWidget):
             checkbox.stateChanged.connect(lambda state, row=offset + row_idx: self.toggle_applied(row))
             self.table_manager.table.setCellWidget(row_idx, 5, checkbox)
 
-        total_pages = max(1, (total_results + self.page_size - 1) // self.page_size)
-        self.page_info_label.setText(f"Page {self.current_page + 1} of {total_pages}")
-        self.result_count_label.setText(f"Total Results: {total_results}")
+        self.navigation_manager.update_page_info(self.current_page, total_results, self.page_size)
 
         for row_idx in range(len(rows)):
+            print(f"Row {row_idx}: {row_data}")
             item = self.table_manager.table.verticalHeaderItem(row_idx)
             if item is None:
                 item = QTableWidgetItem()
@@ -183,45 +173,6 @@ class TSAApp(QWidget):
             self.conn.commit()
 
             print(f"Updated '{organisation_name}' to {'applied' if applied_value else 'not applied'}")
-
-class TableManager:
-    def __init__(self):
-        self.table = QTableWidget()
-
-    def setup_table(self, parent_layout):
-        self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels(["Organisation", "City", "County", "Type & Rating", "Route", "Applied"])
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.table.setAlternatingRowColors(True)
-
-        header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-
-        # Set minimum widths for each column
-        self.table.setColumnWidth(0, 200)  # Organisation
-        header.setMinimumSectionSize(60)
-        header.resizeSection(0, 200)
-        header.resizeSection(1, 140)
-        header.resizeSection(2, 140)
-        header.resizeSection(3, 160)
-        header.resizeSection(4, 160)
-        header.resizeSection(5, 60)
-
-        # Allow the table to stretch across the window by assigning stretch factors
-        header.setStretchLastSection(False)
-
-        parent_layout.addWidget(self.table)
-
-    def adjust_column_widths(self, table_width):
-        fixed_columns_width = 60  # Applied column
-        remaining_width = table_width - fixed_columns_width
-        # Distribute remaining width proportionally
-        self.table.setColumnWidth(0, max(200, int(remaining_width * 0.3)))  # Organisation
-        self.table.setColumnWidth(1, max(120, int(remaining_width * 0.15)))  # City
-        self.table.setColumnWidth(2, max(120, int(remaining_width * 0.15)))  # County
-        self.table.setColumnWidth(3, max(140, int(remaining_width * 0.2)))  # Type & Rating
-        self.table.setColumnWidth(4, max(140, int(remaining_width * 0.2)))  # Route
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
