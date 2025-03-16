@@ -26,6 +26,13 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Ignore all files in data folder
+data/*
+
+# But keep this placeholder file
+!data/.gitkeep
+
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -50,6 +57,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+
+# vscode
+.vscode/
 
 # Translations
 *.mo
