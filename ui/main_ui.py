@@ -81,13 +81,21 @@ class TSAApp(QWidget):
 
         city = self.city_input.text().strip()
         if city:
-            filters.append("LOWER(town_city) LIKE ?")
-            params.append(f"%{city.lower()}%")
+            if len(city) == 1:
+                filters.append("LOWER(town_city) LIKE ?")
+                params.append(f"{city.lower()}%")
+            else:
+                filters.append("LOWER(town_city) LIKE ?")
+                params.append(f"%{city.lower()}%")
 
         org = self.org_input.text().strip()
         if org:
-            filters.append("LOWER(organisation_name) LIKE ?")
-            params.append(f"%{org.lower()}%")
+            if len(org) == 1:
+                filters.append("LOWER(organisation_name) LIKE ?")
+                params.append(f"{org.lower()}%")
+            else:
+                filters.append("LOWER(organisation_name) LIKE ?")
+                params.append(f"%{org.lower()}%")
 
         if filters:
             query += " WHERE " + " AND ".join(filters)
