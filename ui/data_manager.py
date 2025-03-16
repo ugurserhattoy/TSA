@@ -1,6 +1,6 @@
 import sqlite3, os
-from sponsor.csv_manager import CSVManager
-from sponsor.transform_db import TransformDB
+from TSA.sponsor.csv_manager import CSVManager
+from TSA.sponsor.transform_db import TransformDB
 
 class DataManager:
     def __init__(self):

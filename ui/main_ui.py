@@ -1,10 +1,9 @@
-import sys, os
+import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
     QLineEdit, QPushButton, QHBoxLayout, QCheckBox, QLabel, QHeaderView
 )
 from PyQt6.QtCore import Qt
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from TSA.ui.table_manager import TableManager
 from TSA.ui.data_manager import DataManager
 from TSA.ui.navigation_manager import NavigationManager
@@ -59,26 +58,8 @@ class TSAApp(QWidget):
             self.load_prev_page
         )
 
-    def configure_table(self):
-        self.table_manager.table.verticalHeader().setVisible(True)
-        self.table_manager.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.table_manager.table.setWordWrap(False)
-        self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
-        self.table_manager.table.verticalHeader().setDefaultSectionSize(24)
-        self.table_manager.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        self.layout.addWidget(self.table_manager.table)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.table_manager.adjust_column_widths(self.table_manager.table.viewport().width())
-
-    def apply_filter(self):
-        self.current_page = 0
-        self.load_data_page()
-
-    def load_data_page(self):
-        offset = self.current_page * self.page_size
-        query = """
+    def build_query(self):
+        base_query = """
             SELECT organisation_name, town_city, county, type_and_rating, route, applied
             FROM sponsors
         """
@@ -104,17 +85,39 @@ class TSAApp(QWidget):
                 params.append(f"%{org.lower()}%")
 
         if filters:
-            query += " WHERE " + " AND ".join(filters)
-
-        query += " LIMIT ? OFFSET ?"
-        params.extend([self.page_size, offset])
+            base_query += " WHERE " + " AND ".join(filters)
 
         count_query = "SELECT COUNT(*) FROM sponsors"
-        count_params = []
-
+        count_params = params.copy()
         if filters:
             count_query += " WHERE " + " AND ".join(filters)
-            count_params = params[:-2]  # exclude LIMIT and OFFSET
+
+        offset = self.current_page * self.page_size
+        base_query += " LIMIT ? OFFSET ?"
+        params.extend([self.page_size, offset])
+
+        return base_query, params, count_query, count_params
+
+    def configure_table(self):
+        self.table_manager.table.verticalHeader().setVisible(True)
+        self.table_manager.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.table_manager.table.setWordWrap(False)
+        self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.table_manager.table.verticalHeader().setDefaultSectionSize(24)
+        self.table_manager.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.layout.addWidget(self.table_manager.table)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.table_manager.adjust_column_widths(self.table_manager.table.viewport().width())
+
+    def apply_filter(self):
+        self.current_page = 0
+        self.load_data_page()
+
+    def load_data_page(self):
+        offset = self.current_page * self.page_size
+        query, params, count_query, count_params = self.build_query()
 
         count_cursor = self.conn.cursor()
         count_cursor.execute(count_query, count_params)
@@ -123,7 +126,7 @@ class TSAApp(QWidget):
         cursor = self.conn.cursor()
         cursor.execute(query, params)
         rows = cursor.fetchall()
-        print("ROWS FETCHED:", rows)
+        # print("ROWS FETCHED:", rows)
         self.table_manager.table.setRowCount(len(rows))
 
         self.table_manager.table.setColumnCount(6)
@@ -140,7 +143,7 @@ class TSAApp(QWidget):
         self.navigation_manager.update_page_info(self.current_page, total_results, self.page_size)
 
         for row_idx in range(len(rows)):
-            print(f"Row {row_idx}: {row_data}")
+            # print(f"Row {row_idx}: {row_data}")
             item = self.table_manager.table.verticalHeaderItem(row_idx)
             if item is None:
                 item = QTableWidgetItem()
@@ -148,9 +151,9 @@ class TSAApp(QWidget):
             item.setText(str(offset + row_idx + 1))
         self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
-        print("QUERY:", query)
-        print("PARAMS:", params)
-        print(f"📄 Loaded page {self.current_page + 1}")
+        # print("QUERY:", query)
+        # print("PARAMS:", params)
+        # print(f"📄 Loaded page {self.current_page + 1}")
 
     def load_next_page(self):
         self.current_page += 1
