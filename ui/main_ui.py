@@ -25,7 +25,7 @@ class TSAApp(QWidget):
         self.setWindowTitle("TSA - Track Sponsored Applications")
         self.setGeometry(100, 100, 800, 600)
 
-        self.layout = QVBoxLayout()
+        self.layout: QVBoxLayout = QVBoxLayout()
         self.setLayout(self.layout)
 
         self.page_size = 50
