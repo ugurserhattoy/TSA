@@ -32,6 +32,8 @@ data/*
 # But keep this placeholder file
 !data/.gitkeep
 
+# Ignore logs
+logs/*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
