@@ -7,11 +7,15 @@ from PyQt6.QtCore import Qt
 from TSA.ui.table_manager import TableManager
 from TSA.ui.data_manager import DataManager
 from TSA.ui.navigation_manager import NavigationManager
+from TSA.sponsor.init_logger import init_logger
 from TSA.config import DB_PATH
+
+logger = init_logger()
 
 class TSAApp(QWidget):
     def __init__(self):
-        print("Database path:", DB_PATH)
+        # print("Database path:", DB_PATH)
+        logger.info(f"DB Path: {DB_PATH}")
         super().__init__()
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
@@ -175,8 +179,8 @@ class TSAApp(QWidget):
             cursor.execute("UPDATE sponsors SET applied=? WHERE organisation_name=?", (applied_value, organisation_name))
             self.conn.commit()
 
-            print(f"Updated '{organisation_name}' to {'applied' if applied_value else 'not applied'}")
-
+            # print(f"Updated '{organisation_name}' to {'applied' if applied_value else 'not applied'}")
+            logger.info(f"Updated '{organisation_name}' to {'applied' if applied_value else 'not applied'}")
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = TSAApp()
