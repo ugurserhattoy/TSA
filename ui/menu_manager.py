@@ -29,7 +29,7 @@ class MenuManager(QObject):
         """
         super().__init__()
         self.parent = parent
-        self.menu_bar = QMenuBar(parent)
+        self.menu_bar = QMenuBar()
         self.create_menus()
 
     def create_menus(self):
@@ -37,11 +37,12 @@ class MenuManager(QObject):
         Creates and attaches all top-level menus to the menu bar.
         """
         self.create_tools_menu()
-        self.create_settings_menu()  # Placeholder for future use
+        self.create_settings_menu()
         self.create_help_menu()      # Placeholder for future use
         self.create_about_menu()     # Placeholder for future use
 
         self.parent.setMenuBar(self.menu_bar)
+        print("[DEBUG] FINAL MENU HEADERS:", [action.text() for action in self.menu_bar.actions()])
 
     def create_tools_menu(self):
         """
@@ -58,10 +59,13 @@ class MenuManager(QObject):
         Creates the Settings menu with a placeholder action.
         """
         settings_menu = QMenu("Settings", self.parent)
-        placeholder = QAction("Coming soon...", self.parent)
-        placeholder.setEnabled(False)
-        settings_menu.addAction(placeholder)
+        settings_action = QAction("Settings", self.parent)
+        settings_action.triggered.connect(self.settings_requested.emit)
+        settings_menu.addAction(settings_action)
         self.menu_bar.addMenu(settings_menu)
+        print("[DEBUG] Added Settings menu:", [action.text() for action in self.menu_bar.actions()])
+        print("MENÜ OBJESİ:", settings_menu.title(), "| OBJ TYPE:", type(settings_menu))
+        print("[DEBUG] Settings menu created:", settings_menu.title())
 
     def create_help_menu(self):
         """

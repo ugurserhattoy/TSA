@@ -22,9 +22,11 @@ from TSA.ui.table_manager import TableManager
 from TSA.ui.data_manager import DataManager
 from TSA.ui.navigation_manager import NavigationManager
 import logging
-from TSA.config import DB_PATH
+from TSA.config import DB_PATH, SETTINGS_PATH
 from TSA.ui.menu_manager import MenuManager
 from TSA.ui.logs_viewer import LogsViewer
+from TSA.ui.settings_ui import SettingsUI
+from TSA.sponsor.settings_manager import SettingsManager
 
 logger = logging.getLogger()
 
@@ -50,6 +52,9 @@ class TSAController(QMainWindow):
         self.data_manager.conn = self.conn
         # Initialize TableManager before UI
         self.table_manager = TableManager()
+
+        # Initialize SettingsManager 
+        self.settings = SettingsManager(SETTINGS_PATH)
         
         self.initUI()
         self.load_data_page()  # Initial data load after UI setup
@@ -100,7 +105,7 @@ class TSAController(QMainWindow):
         # Menu
         self.menu_manager = MenuManager(self)
         self.menu_manager.logs_requested.connect(self.show_logs_viewer)
-        # self.menu_manager.settings_requested.connect(self.show_settings_viewer)
+        self.menu_manager.settings_requested.connect(self.show_settings_ui)
         # self.menu_manager.help_requested.connect(self.show_help_viewer)
 
     def build_query(self):
@@ -233,6 +238,23 @@ class TSAController(QMainWindow):
     def show_logs_viewer(self):
         self.logs_viewer = LogsViewer()
         self.logs_viewer.show()
+
+    # Settings    
+    def show_settings_ui(self):
+        """Opens the settings UI window for log preferences."""
+        print("[DEBUG] show_settings_ui triggered")
+        current_log_level = self.settings.get_log_level()
+        rotation_limit = self.settings.get_log_rotation_limit()
+
+        self.settings_ui = SettingsUI(current_log_level, rotation_limit)
+        self.settings_ui.settings_saved.connect(self.apply_settings)
+        self.settings_ui.show()
+
+    def apply_settings(self, log_level: str, rotation_limit: int):
+        """Handles saving settings from the UI."""
+        self.settings.set_log_level(log_level)
+        self.settings.set_log_rotation_limit(rotation_limit)
+        logger.info(f"Settings updated: level={log_level}, rotation={rotation_limit}")
         
     def toggle_applied(self, row_idx, state):
         """
@@ -248,14 +270,11 @@ class TSAController(QMainWindow):
 
         org_item = self.table_manager.table.item(row_idx % self.page_size, 0)
         city_item = self.table_manager.table.item(row_idx % self.page_size, 1)
-        print(f"org_item: {org_item} | city_item: {city_item}")
 
-        print(f"[STATE DEBUG] Qt state: {int(state)} | interpreted as: {1 if state == Qt.CheckState.Checked.value else 0}")
         if org_item and city_item:
             organisation_name = org_item.text()
             city = city_item.text()
 
-            print(f"org: {organisation_name} | city: {city}")
             current_status = 1 if state == Qt.CheckState.Checked.value else 0
             self.data_manager.toggle_applied(organisation_name, city, current_status)
 

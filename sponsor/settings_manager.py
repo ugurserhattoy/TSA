@@ -18,7 +18,7 @@ class SettingsManager:
 
     def load_settings(self):
         """
-        Load settings from a JSON file or use defaults if not found.
+        Load settings from a JSON file or create it with defaults if not found.
         """
         if os.path.exists(self.config_path):
             try:
@@ -26,7 +26,12 @@ class SettingsManager:
                     return json.load(f)
             except Exception:
                 pass
-        return self.DEFAULT_SETTINGS.copy()
+        os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+        default_copy = self.DEFAULT_SETTINGS.copy()
+        with open(self.config_path, "w") as f:
+            json.dump(default_copy, f, indent=4)
+        return default_copy
+        # return self.DEFAULT_SETTINGS.copy()
 
     def save_settings(self):
         """
