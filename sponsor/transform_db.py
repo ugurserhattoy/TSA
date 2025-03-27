@@ -1,30 +1,45 @@
+"""
+This module handles transformation of sponsor CSV data into a cleaned format 
+and saves it into a SQLite database while preserving certain fields such as 'applied'.
+"""
+
 import pandas as pd
 import os
 import sqlite3
 from TSA.config import CSV_PATH, DB_PATH
-
-# df = pd.read_csv("sponsors.csv", header=0)
-# print(df.columns)
-# df.columns = ["organisation", "city", "county", "type_rating", "route"]
-# print(df.columns)
+# from TSA.sponsor.init_logger import init_logger
+import logging
+from TSA.sponsor.settings_manager import SettingsManager
 
 class TransformDB:
+    """
+    Responsible for reading sponsor data from a CSV file, cleaning it,
+    transforming it into a DataFrame, and saving it into an SQLite database.
+    Preserves the 'applied' status of organizations if previously stored.
+    """
+    
     def __init__(self, csv_path=CSV_PATH, db_path=DB_PATH):
         """Initial definitions"""
         self.csv_path = csv_path
         self.db_path = db_path
-        # if db file location is changed by the user, will make dir
+        # log_level = SettingsManager().get_log_level()
+        self.logger = logging.getLogger()
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
 
     def clean_and_transform_csv(self):
         """Cleans the csv and transforms to dataframe"""
-        print(f"📌 {self.csv_path} is transforming...")
-
-        df = pd.read_csv(self.csv_path, encoding="utf-8")
+        self.logger.info(f"📌 {self.csv_path} is transforming...")
+        
+        try:
+            df = pd.read_csv(self.csv_path, encoding="utf-8")
+        except FileNotFoundError:
+            self.logger.error(f"CSV file not found at {self.csv_path}")
+            raise
+            
         df.columns = df.columns.str.strip().str.replace(" ", "_").str.replace("/", "_").str.replace("&", "and").str.lower()
         df = df.fillna("")
 
-        print(f"✅ {self.csv_path} is transformed.")
+        self.logger.info(f"✅ {self.csv_path} is transformed.")
         return df
     
     def save_as_sqlite(self, df, db_path):
@@ -41,6 +56,8 @@ class TransformDB:
                 applied_data = {}
 
             # Add 'applied' column to DataFrame based on existing data
+            if "organisation_name" not in df.columns:
+                raise ValueError("'organisation_name' column is missing from the CSV.")
             df["applied"] = df["organisation_name"].apply(lambda name: applied_data.get(name, 0))
 
             # Build column creation SQL (excluding 'applied')
@@ -56,11 +73,13 @@ class TransformDB:
             # Clear old data and insert new
             cursor.execute("DELETE FROM sponsors")
             df.to_sql("sponsors", conn, if_exists="append", index=False)
-        print(f"✅ Data saved to {db_path}")
+        self.logger.info(f"✅ Data saved to {db_path}")
 
 if __name__ == "__main__":
+    """
+    If run as a script, this block performs the CSV transformation and prints
+    the first few rows of the resulting DataFrame.
+    """
     transform = TransformDB()
     df = transform.clean_and_transform_csv()
     print(df.head())
-    # print(df["organisation_name"].unique()[:10])
-    transform.save_as_sqlite(df, transform.db_path)

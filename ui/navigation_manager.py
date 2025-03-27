@@ -2,7 +2,29 @@ from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
 
 class NavigationManager:
+    """
+    Manages the navigation controls including pagination buttons and result info display.
+
+    This class provides an interface for navigating through paginated results, 
+    allowing users to move to the previous or next page and displaying 
+    the current page number along with the total number of results.
+
+    Attributes:
+        page_info_label (QLabel): Displays the current page number.
+        result_info_label (QLabel): Displays the total number of results.
+        previous_button (QPushButton): Button to navigate to the previous page.
+        next_button (QPushButton): Button to navigate to the next page.
+    """
+
     def __init__(self, parent_layout, load_next_callback, load_previous_callback):
+        """
+        Initializes the navigation UI elements and connects button signals.
+
+        Args:
+            parent_layout (QLayout): The layout to which the navigation layout is added.
+            load_next_callback (function): Callback for the next page button.
+            load_previous_callback (function): Callback for the previous page button.
+        """
         self.page_info_label = QLabel("Page 1")
         self.result_info_label = QLabel("0 results")
         
@@ -28,7 +50,20 @@ class NavigationManager:
 
         parent_layout.addLayout(nav_layout)
 
-    def update_page_info(self, current_page, total_rows, page_size):
-        total_pages = (total_rows + page_size - 1) // page_size
-        self.page_info_label.setText(f"Page {current_page + 1} of {total_pages}")
-        self.result_info_label.setText(f"{total_rows} results")
+    def set_page_info(self, page_text: str):
+        """
+        Updates the label to display the current page information.
+
+        Args:
+            page_text (str): The text to display as page information.
+        """
+        self.page_info_label.setText(page_text)
+
+    def set_result_info(self, result_text: str):
+        """
+        Updates the label to display the number of results.
+
+        Args:
+            result_text (str): The text to display as result information.
+        """
+        self.result_info_label.setText(result_text)

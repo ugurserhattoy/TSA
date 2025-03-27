@@ -9,5 +9,6 @@ CSV_PATH = os.path.join(DATA_DIR, "sponsors.csv")
 DB_FILENAME = "sponsorship.db"
 DB_PATH = os.path.join(DATA_DIR, DB_FILENAME)
 LOG_FILE = os.path.join(LOG_DIR, "app.log")
+SETTINGS_PATH = os.path.join(BASE_DIR, "data", "settings.json")
 
 LOG_ROTATION_LIMIT = 5
