@@ -1,36 +1,71 @@
-import sys
+"""
+main_ui.py
+
+This module serves as the Controller in the MVC architecture. It manages the main window of the application,
+handles user interactions, coordinates data filtering, pagination, and updating the "applied" status via checkboxes.
+
+Key Components:
+- TableManager: Manages the display and structure of the data table
+- DataManager: Handles database interactions
+- NavigationManager: Manages pagination and result information display
+- MenuManager: Controls menu-related actions and signals
+- LogsViewer: Displays log file content in a separate window
+
+The TSAController class is the main entry point, tying together UI initialization and application logic.
+"""
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
+    QMainWindow, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
     QLineEdit, QPushButton, QHBoxLayout, QCheckBox, QLabel, QHeaderView
 )
 from PyQt6.QtCore import Qt
 from TSA.ui.table_manager import TableManager
 from TSA.ui.data_manager import DataManager
 from TSA.ui.navigation_manager import NavigationManager
-from TSA.sponsor.init_logger import init_logger
+import logging
 from TSA.config import DB_PATH
+from TSA.ui.menu_manager import MenuManager
+from TSA.ui.logs_viewer import LogsViewer
 
-logger = init_logger()
+logger = logging.getLogger()
 
-class TSAApp(QWidget):
+from PyQt6.QtWidgets import QMainWindow
+
+class TSAController(QMainWindow):
+    """
+    Main controller class for the TSA application.
+
+    Initializes the main window, sets up UI components, connects user interactions to logic,
+    and handles loading and updating sponsor data.
+    """
     def __init__(self):
+        """
+        Initializes the TSAController, sets up data and UI components.
+        Establishes database connection and triggers the first data load.
+        """
         # print("Database path:", DB_PATH)
         logger.info(f"DB Path: {DB_PATH}")
         super().__init__()
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
+        self.data_manager.conn = self.conn
         # Initialize TableManager before UI
         self.table_manager = TableManager()
         
         self.initUI()
-        self.load_data_page()
+        self.load_data_page()  # Initial data load after UI setup
 
     def initUI(self):
+        """
+        Builds the main user interface: filter inputs, table display,
+        navigation controls, and menu connections.
+        """
         self.setWindowTitle("TSA - Track Sponsored Applications")
         self.setGeometry(100, 100, 800, 600)
 
-        self.layout: QVBoxLayout = QVBoxLayout()
-        self.setLayout(self.layout)
+        central_widget = QWidget()
+        self.layout = QVBoxLayout()
+        central_widget.setLayout(self.layout)
+        self.setCentralWidget(central_widget)
 
         self.page_size = 50
         self.current_page = 0
@@ -62,7 +97,22 @@ class TSAApp(QWidget):
             self.load_prev_page
         )
 
+        # Menu
+        self.menu_manager = MenuManager(self)
+        self.menu_manager.logs_requested.connect(self.show_logs_viewer)
+        # self.menu_manager.settings_requested.connect(self.show_settings_viewer)
+        # self.menu_manager.help_requested.connect(self.show_help_viewer)
+
     def build_query(self):
+        """
+        Constructs the SQL query and parameters based on current filter inputs.
+
+        Returns:
+            - base_query (str): SELECT query with LIMIT/OFFSET
+            - params (list): parameters for base_query
+            - count_query (str): query for total result count
+            - count_params (list): parameters for count_query
+        """
         base_query = """
             SELECT organisation_name, town_city, county, type_and_rating, route, applied
             FROM sponsors
@@ -103,6 +153,10 @@ class TSAApp(QWidget):
         return base_query, params, count_query, count_params
 
     def configure_table(self):
+        """
+        Applies styling and layout configuration to the table widget.
+        Adjusts headers and section sizes.
+        """
         self.table_manager.table.verticalHeader().setVisible(True)
         self.table_manager.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table_manager.table.setWordWrap(False)
@@ -112,6 +166,9 @@ class TSAApp(QWidget):
         self.layout.addWidget(self.table_manager.table)
 
     def resizeEvent(self, event):
+        """
+        Handles window resize events to adjust column widths dynamically.
+        """
         super().resizeEvent(event)
         self.table_manager.adjust_column_widths(self.table_manager.table.viewport().width())
 
@@ -120,6 +177,12 @@ class TSAApp(QWidget):
         self.load_data_page()
 
     def load_data_page(self):
+        """
+        Loads sponsor data for the current page and populates the table.
+
+        Also sets checkbox states and attaches stateChanged handlers
+        for each row's 'applied' field.
+        """
         offset = self.current_page * self.page_size
         query, params, count_query, count_params = self.build_query()
 
@@ -141,23 +204,22 @@ class TSAApp(QWidget):
                 self.table_manager.table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
             checkbox = QCheckBox()
             checkbox.setChecked(bool(row_data[-1]))
-            checkbox.stateChanged.connect(lambda state, row=offset + row_idx: self.toggle_applied(row))
+            checkbox.stateChanged.connect(lambda state, row=row_idx: self.toggle_applied(row + offset, state))
             self.table_manager.table.setCellWidget(row_idx, 5, checkbox)
 
-        self.navigation_manager.update_page_info(self.current_page, total_results, self.page_size)
+        page_info = f"Page {self.current_page + 1}"
+        result_info = f"{total_results} results"
+        logger.debug(f"Page info: {page_info}, Result info: {result_info}")
+        self.navigation_manager.set_page_info(page_info)
+        self.navigation_manager.set_result_info(result_info)
 
         for row_idx in range(len(rows)):
-            # print(f"Row {row_idx}: {row_data}")
             item = self.table_manager.table.verticalHeaderItem(row_idx)
             if item is None:
                 item = QTableWidgetItem()
                 self.table_manager.table.setVerticalHeaderItem(row_idx, item)
             item.setText(str(offset + row_idx + 1))
         self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-
-        # print("QUERY:", query)
-        # print("PARAMS:", params)
-        # print(f"📄 Loaded page {self.current_page + 1}")
 
     def load_next_page(self):
         self.current_page += 1
@@ -168,21 +230,33 @@ class TSAApp(QWidget):
             self.current_page -= 1
             self.load_data_page()
 
-    def toggle_applied(self, row_idx):
+    def show_logs_viewer(self):
+        self.logs_viewer = LogsViewer()
+        self.logs_viewer.show()
+        
+    def toggle_applied(self, row_idx, state):
+        """
+        Triggered when a checkbox is toggled.
+
+        Updates the 'applied' status of the corresponding sponsor in the database,
+        based on the checkbox state.
+        """
+        # if not self.conn:
+        #     print("[TOGGLE DEBUG] self.conn is None!")
+        # else:
+        #     print("[TOGGLE DEBUG] self.conn is VALID")
+
         org_item = self.table_manager.table.item(row_idx % self.page_size, 0)
-        if org_item:
+        city_item = self.table_manager.table.item(row_idx % self.page_size, 1)
+        print(f"org_item: {org_item} | city_item: {city_item}")
+
+        print(f"[STATE DEBUG] Qt state: {int(state)} | interpreted as: {1 if state == Qt.CheckState.Checked.value else 0}")
+        if org_item and city_item:
             organisation_name = org_item.text()
-            checkbox = self.table_manager.table.cellWidget(row_idx % self.page_size, 5)
-            applied_value = 1 if checkbox.isChecked() else 0
+            city = city_item.text()
 
-            cursor = self.conn.cursor()
-            cursor.execute("UPDATE sponsors SET applied=? WHERE organisation_name=?", (applied_value, organisation_name))
-            self.conn.commit()
+            print(f"org: {organisation_name} | city: {city}")
+            current_status = 1 if state == Qt.CheckState.Checked.value else 0
+            self.data_manager.toggle_applied(organisation_name, city, current_status)
 
-            # print(f"Updated '{organisation_name}' to {'applied' if applied_value else 'not applied'}")
-            logger.info(f"Updated '{organisation_name}' to {'applied' if applied_value else 'not applied'}")
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = TSAApp()
-    window.show()
-    sys.exit(app.exec())
+            logger.info(f"Updated '{organisation_name}' to {'applied' if current_status else 'not applied'}")

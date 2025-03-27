@@ -1,10 +1,19 @@
-from PyQt6.QtWidgets import QTableWidget, QHeaderView
+from PyQt6.QtWidgets import QTableWidget, QHeaderView, QVBoxLayout
 
 class TableManager:
-    def __init__(self):
+    """View class responsible for setting up and managing the sponsor table display."""
+
+    def __init__(self) -> None:
+        """Initializes the QTableWidget used to display sponsor data."""
         self.table = QTableWidget()
 
-    def setup_table(self, parent_layout):
+    def setup_table(self, parent_layout: QVBoxLayout) -> None:
+        """
+        Sets up the table with headers, configuration, and adds it to the layout.
+
+        Args:
+            parent_layout (QVBoxLayout): The layout to which the table is added.
+        """
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(["Organisation", "City", "County", "Type & Rating", "Route", "Applied"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -29,7 +38,13 @@ class TableManager:
 
         parent_layout.addWidget(self.table)
 
-    def adjust_column_widths(self, table_width):
+    def adjust_column_widths(self, table_width: int) -> None:
+        """
+        Adjusts the widths of the columns based on the current table width.
+
+        Args:
+            table_width (int): The width of the table's viewport.
+        """
         fixed_columns_width = 80  # Applied column
         remaining_width = table_width - fixed_columns_width
         # Distribute remaining width proportionally
