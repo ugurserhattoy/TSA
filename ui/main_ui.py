@@ -18,6 +18,8 @@ from PyQt6.QtWidgets import (
     QLineEdit, QPushButton, QHBoxLayout, QCheckBox, QLabel, QHeaderView
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence, QShortcut
+import platform
 from TSA.ui.table_manager import TableManager
 from TSA.ui.data_manager import DataManager
 from TSA.ui.navigation_manager import NavigationManager
@@ -79,8 +81,10 @@ class TSAController(QMainWindow):
         self.filter_layout = QHBoxLayout()
         self.city_input = QLineEdit()
         self.city_input.setPlaceholderText("Filter by City")
+        self.city_input.returnPressed.connect(self.apply_filter) # Enter
         self.org_input = QLineEdit()
         self.org_input.setPlaceholderText("Filter by Organisation")
+        self.org_input.returnPressed.connect(self.apply_filter)
         self.filter_button = QPushButton("Apply Filter")
         self.filter_button.clicked.connect(self.apply_filter)
 
@@ -107,6 +111,19 @@ class TSAController(QMainWindow):
         self.menu_manager.logs_requested.connect(self.show_logs_viewer)
         self.menu_manager.settings_requested.connect(self.show_settings_ui)
         # self.menu_manager.help_requested.connect(self.show_help_viewer)
+
+        # Keyboard shortcuts for pagination
+        platform_name = platform.system()
+
+        if platform_name == "Darwin":  # macOS
+            prev_shortcut = QShortcut(QKeySequence("Meta+B"), central_widget)
+            next_shortcut = QShortcut(QKeySequence("Meta+N"), central_widget)
+        else:  # Windows or Linux
+            prev_shortcut = QShortcut(QKeySequence("Alt+B"), central_widget)
+            next_shortcut = QShortcut(QKeySequence("Alt+N"), central_widget)
+
+        prev_shortcut.activated.connect(self.load_prev_page)
+        next_shortcut.activated.connect(self.load_next_page)
 
     def build_query(self):
         """
