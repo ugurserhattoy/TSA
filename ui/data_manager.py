@@ -2,6 +2,7 @@ import sqlite3, os
 from TSA.sponsor.csv_manager import CSVManager
 from TSA.sponsor.transform_db import TransformDB
 import logging
+
 logger = logging.getLogger()
 
 class DataManager:
