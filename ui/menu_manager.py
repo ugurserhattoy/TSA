@@ -64,7 +64,7 @@ class MenuManager(QObject):
         settings_menu.addAction(settings_action)
         self.menu_bar.addMenu(settings_menu)
         print("[DEBUG] Added Settings menu:", [action.text() for action in self.menu_bar.actions()])
-        print("MENÜ OBJESİ:", settings_menu.title(), "| OBJ TYPE:", type(settings_menu))
+        print("MENU OBJECT:", settings_menu.title(), "| OBJ TYPE:", type(settings_menu))
         print("[DEBUG] Settings menu created:", settings_menu.title())
 
     def create_help_menu(self):
