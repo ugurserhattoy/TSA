@@ -9,6 +9,9 @@ on:
       - main
   workflow_dispatch: # manual trigger
 
+permissions:
+  contents: write
+
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml
