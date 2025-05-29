@@ -5,7 +5,7 @@ import pytest
 from sponsor.transform_db import TransformDB
 
 
-@pytest.fixture(name='transform_db')
+@pytest.fixture(name="transform_db")
 def make_transform_db():
     """Fresh transform DB instance with temp files for each test"""
     with tempfile.TemporaryDirectory() as tempdir:

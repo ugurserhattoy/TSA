@@ -26,7 +26,7 @@ class SettingsManager:
                 with open(self.config_path, "r", encoding="utf-8") as f:
                     return json.load(f)
             except (OSError, JSONDecodeError) as err:
-                self.logger.error('❌ JSON file not loaded: %s', err)
+                self.logger.error("❌ JSON file not loaded: %s", err)
                 raise
 
         os.makedirs(os.path.dirname(self.config_path), exist_ok=True)

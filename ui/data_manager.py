@@ -33,7 +33,9 @@ class DataManager:
 
         logger.debug(
             "[TOGGLE] updating: '%s' | '%s' → %s",
-            organisation_name, town_city, new_status
+            organisation_name,
+            town_city,
+            new_status,
         )
 
         cursor = self.conn.cursor()

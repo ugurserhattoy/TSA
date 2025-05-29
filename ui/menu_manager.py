@@ -1,7 +1,7 @@
 """
-This module defines the MenuManager class, 
+This module defines the MenuManager class,
 which handles the creation of the application's menu bar and its menus,
-including tools, settings, help, and about. 
+including tools, settings, help, and about.
 It also defines signals for handling menu item interactions.
 """
 

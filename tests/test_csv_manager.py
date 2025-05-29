@@ -11,6 +11,7 @@ def make_csv_manager():
         csv_path = os.path.join(temp_dir, "sponsors.csv")
         yield CSVManager(csv_dir=temp_dir, csv_file=csv_path)
 
+
 def test_is_csv_outdated_nofile(csv_manager):
     """Test if .csv file not found"""
     if os.path.exists(csv_manager.csv_file):
@@ -22,6 +23,7 @@ def test_is_csv_outdated_nofile(csv_manager):
         csv_manager.is_csv_outdated()
     ), "❌ is_csv_outdated() should return True when the file not found."
 
+
 def test_is_csv_outdated_old_file(csv_manager):
     """Test if .csv file outdated"""
     with open(csv_manager.csv_file, "w", encoding="utf-8") as f:
@@ -32,6 +34,7 @@ def test_is_csv_outdated_old_file(csv_manager):
         csv_manager.is_csv_outdated()
     ), "❌ is_csv_outdated() should return True when the file is outdated."
 
+
 def test_is_csv_outdated_recent_file(csv_manager):
     """Test when .csv file is up to date"""
     with open(csv_manager.csv_file, "w", encoding="utf-8") as f:
@@ -41,6 +44,7 @@ def test_is_csv_outdated_recent_file(csv_manager):
     assert (
         not csv_manager.is_csv_outdated()
     ), "❌ is_csv_outdated() should return False when the file is up to date."
+
 
 def test_download_csv(csv_manager):
     """Test .csv download"""

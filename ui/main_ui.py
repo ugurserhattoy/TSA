@@ -1,9 +1,9 @@
 """
 main_ui.py
 
-This module serves as the Controller in the MVC architecture. 
-It manages the main window of the application, handles user interactions, 
-coordinates data filtering, pagination and 
+This module serves as the Controller in the MVC architecture.
+It manages the main window of the application, handles user interactions,
+coordinates data filtering, pagination and
 updating the "applied" status via checkboxes.
 
 Key Components:
@@ -13,7 +13,7 @@ Key Components:
 - MenuManager: Controls menu-related actions and signals
 - LogsViewer: Displays log file content in a separate window
 
-The TSAController class is the main entry point, 
+The TSAController class is the main entry point,
 tying together UI initialization and application logic.
 """
 
@@ -303,7 +303,9 @@ class TSAController(QMainWindow):
         """Handles saving settings from the UI."""
         self.settings.set_log_level(log_level)
         self.settings.set_log_rotation_limit(rotation_limit)
-        logger.info("Settings updated: level=%s, rotation=%s", log_level, rotation_limit)
+        logger.info(
+            "Settings updated: level=%s, rotation=%s", log_level, rotation_limit
+        )
 
     def toggle_applied(self, row_idx, state):
         """
@@ -329,5 +331,5 @@ class TSAController(QMainWindow):
 
             logger.info(
                 "Updated '%s' to {'applied' if current_status else 'not applied'}",
-                organisation_name
+                organisation_name,
             )
