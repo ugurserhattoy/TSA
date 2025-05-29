@@ -13,7 +13,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git clone --depth 1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} badge-repo
-          cp -r .github/badges/* badge-repo/
+          cp -r badge-jsons/* badge-repo/
           cd badge-repo
           git switch badges || git switch -c badges
 
