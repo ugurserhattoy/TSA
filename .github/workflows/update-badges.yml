@@ -7,6 +7,9 @@ jobs:
   update-badges:
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: write
+
     steps:
       - name: Download badge jsons from artifact
         uses: actions/download-artifact@v4
@@ -14,17 +17,25 @@ jobs:
           name: badge-jsons
           path: ./badges
 
-      - name: Copy badge jsons to branch
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git clone --depth 1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} badge-repo
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./badges
+          publish_branch: gh-pages
+          commit_message: "Update badges [skip ci]"
 
-      - name: Copy and push updates in badge branch
-        run: |
-          cd badge-repo
-          git switch badges || git switch -c badges
-          cp -r ../badges/* .
-          git add .
-          git commit -m "Update badges [skip ci]" || echo "No changes to commit"
-          git push -u origin badges
+      # - name: Copy badge jsons to branch
+      #   run: |
+      #     git config --global user.name "github-actions"
+      #     git config --global user.email "github-actions@github.com"
+      #     git clone --depth 1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} badge-repo
+
+      # - name: Copy and push updates in badge branch
+      #   run: |
+      #     cd badge-repo
+      #     git switch badges || git switch -c badges
+      #     cp -r ../badges/* .
+      #     git add .
+      #     git commit -m "Update badges [skip ci]" || echo "No changes to commit"
+      #     git push -u origin badges
