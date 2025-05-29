@@ -52,7 +52,7 @@ jobs:
       - name: Build app with PyInstaller
         run: pyinstaller tsa.spec
 
-      - name: Create DMG (macOS only)
+      - name: Create DMG and SHA256
         if: runner.os == 'macOS'
         run: |
           brew install create-dmg
@@ -66,27 +66,30 @@ jobs:
             --app-drop-link 375 100 \
             dist/TSA.dmg \
             dist/TSA.app
+          shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
 
-      - name: Create Linux archive
-        if: runner.os == 'Linux'
-        run: |
-          cd dist && zip -r TSA-Linux.zip TSA
-
-      - name: Create Windows archive
+      - name: Create Windows archive and SHA256
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Compress-Archive -Path dist\TSA -DestinationPath dist\TSA-Windows.zip
+          CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
 
-      - name: Generate checksum
+      - name: Create Linux archive and SHA256
+        if: runner.os == 'Linux'
         run: |
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
-          elif [ "${{ runner.os }}" = "Windows" ]; then
-            CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
-          else
-            sha256sum dist/TSA/TSA > dist/TSA.sha256
-          fi
+          cd dist && zip -r TSA-Linux.zip TSA
+          sha256sum dist/TSA/TSA > dist/TSA.sha256
+
+      # - name: Generate checksum
+      #   run: |
+      #     if [ "${{ runner.os }}" == "macOS" ]; then
+      #       shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
+      #     elif [ "${{ runner.os }}" = "Windows" ]; then
+      #       CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
+      #     else
+      #       sha256sum dist/TSA/TSA > dist/TSA.sha256
+      #     fi
 
       - name: Upload to Release
         if: github.ref == 'refs/heads/main'
