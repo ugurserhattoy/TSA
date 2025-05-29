@@ -26,6 +26,7 @@ jobs:
 
       - name: Push updates in badge branch
         run: |
+          ls -la
           git add .
           git commit -m "Update badges [skip ci]" || echo "No changes to commit"
           git push
