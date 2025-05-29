@@ -12,6 +12,8 @@ on:
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml
+    secrets:
+      SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
   
   update-badges:
     uses: ./.github/workflows/update-badges.yml
