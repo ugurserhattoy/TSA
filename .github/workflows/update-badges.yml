@@ -1,0 +1,23 @@
+name: Update Test Badges
+
+on:
+  workflow_call:
+
+jobs:
+  update-badges:
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout badges branch
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git clone --depth 1 --branch badges https://github.com/${{ github.repository }} badge-repo
+
+      - name: Copy badge files
+        run: |
+          cp -r test-results/* badge-repo/
+          cd badge-repo
+          git add .
+          git commit -m "Update badges [skip ci]" || echo "No changes to commit"
+          git push

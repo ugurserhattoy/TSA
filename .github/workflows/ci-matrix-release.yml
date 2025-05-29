@@ -1,10 +1,5 @@
 name: TSA Pipeline
 
-# on:
-#   push:
-#     branches:
-#       - main
-
 on:
   push:
     branches:
@@ -15,42 +10,15 @@ on:
   workflow_dispatch: # manual trigger
 
 jobs:
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run tests
-        run: |
-          PYTHONPATH=. pytest -s tests
-
-      - name: Code quality check (black + pylint)
-        run: |
-          pip install black pylint
-          black --check --diff --color .
-          PYTHONPATH=. pylint --fail-under=8.0 $(git ls-files '*.py')
-      
-      - name: Security check (bandit + safety)
-        run: |
-          pip install bandit safety
-          bandit -r . --exclude ./tests
-          safety --key ${{ secrets.SAFETY_API_KEY }} scan -r requirements.txt
+  tests:
+    uses: ./.github/workflows/tests.yml
+  
+  update-badges:
+    uses: ./.github/workflows/update-badges.yml
 
   build:
     name: Build & Release TSA
-    needs: test
+    needs: tests
     # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     if: >
       startsWith(github.ref, 'refs/tags/v') &&
