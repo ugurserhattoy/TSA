@@ -10,8 +10,6 @@ jobs:
   update-badges:
     runs-on: ubuntu-latest
     if: always()
-    permissions:
-      contents: write
 
     steps:
       - name: Download badge jsons from artifact
