@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          if [ "${{ runner.os }}" == "macOS" ]; then brew install create-dmg; fi
+          if [[ "${{ runner.os }}" == "macOS" ]]; then brew install create-dmg; fi
 
       - name: Build app with PyInstaller
         run: pyinstaller tsa.spec
