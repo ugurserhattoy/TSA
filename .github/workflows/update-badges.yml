@@ -25,7 +25,6 @@ jobs:
           cd badge-repo
           git switch badges || git switch -c badges
           cp -r ../badges/* .
-          ls -la
           git add .
           git commit -m "Update badges [skip ci]" || echo "No changes to commit"
-          git push
+          git push -u origin badges
