@@ -46,8 +46,7 @@ jobs:
         run: |
           pip install bandit safety
           bandit -r . --exclude ./tests
-          safety auth --key ${{ secrets.SAFETY_API_KEY }}
-          safety scan -r requirements.txt
+          safety --key ${{ secrets.SAFETY_API_KEY }} scan -r requirements.txt
 
   build:
     name: Build & Release TSA
