@@ -1,5 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
+import os
 
+if sys.platform == 'win32':
+    icon_file = os.path.join('data', 'tsa_icon.ico')
+elif sys.platform == 'darwin':
+    icon_file = os.path.join('data', 'tsa_icon.icns')
+else:
+    icon_file = os.path.join('data', 'tsa_icon.png')
 
 a = Analysis(
     ['ui/app_main.py'],
@@ -32,7 +40,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['data/tsa_icon.icns'],
+    icon=icon_file,
 )
 coll = COLLECT(
     exe,
@@ -46,6 +54,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='TSA.app',
-    icon='data/tsa_icon.icns',
+    icon=icon_file,
     bundle_identifier=None,
 )
