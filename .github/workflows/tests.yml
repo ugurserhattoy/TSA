@@ -51,11 +51,8 @@ jobs:
       - name: Security check
         run: |
           bandit -r . --exclude ./tests > badges/bandit.txt || true
-          echo "envKEY: $SAFETY_API_KEY"
-          echo "KEY: ${{ secrets.SAFETY_API_KEY }}"
           safety --key ${{ secrets.SAFETY_API_KEY }} scan | tee badges/safety.txt
           echo '{"label": "security", "message": "passed", "color": "green"}' > badges/security-check.json
-          ls -la badges
         continue-on-error: true
 
       - name: Record Security Failure
