@@ -8,4 +8,4 @@ tests/test_csv_manager.py ....
 tests/test_transform_db.py ..✅ SQLite transformation tests passed
 .
 
-============================== 7 passed in 3.64s ===============================
+============================== 7 passed in 3.52s ===============================
