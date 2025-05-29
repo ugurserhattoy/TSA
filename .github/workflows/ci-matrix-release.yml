@@ -74,7 +74,7 @@ jobs:
 
       - name: Generate checksum
         run: |
-          if [ "${{ runner.os }}" = "macOS" ]; then
+          if [ "${{ runner.os }}" == "macOS" ]; then
             shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
           elif [ "${{ runner.os }}" = "Windows" ]; then
             CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
