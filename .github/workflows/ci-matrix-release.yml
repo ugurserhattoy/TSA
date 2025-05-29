@@ -48,7 +48,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          if [[ "${{ runner.os }}" == "macOS" ]]; then brew install create-dmg; fi
 
       - name: Build app with PyInstaller
         run: pyinstaller tsa.spec
@@ -56,6 +55,7 @@ jobs:
       - name: Create DMG (macOS only)
         if: runner.os == 'macOS'
         run: |
+          brew install create-dmg
           create-dmg \
             --volname "TSA" \
             --volicon "data/tsa_icon.icns" \
