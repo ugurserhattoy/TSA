@@ -3,10 +3,16 @@ name: TSA Pipeline
 on:
   push:
     branches:
-      - '**'
+      - 'release/*'
+      - 'feature/*'
+      - 'hotfix/*'
+    paths-ignore:
+      - '**.md'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
   workflow_dispatch: # manual trigger
 
 permissions:
@@ -25,8 +31,6 @@ jobs:
   build:
     name: Build & Release TSA
     needs: tests
-    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    if: startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
