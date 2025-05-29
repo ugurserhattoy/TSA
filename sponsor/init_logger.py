@@ -10,19 +10,20 @@ Returns:
 
 import logging
 from logging.handlers import RotatingFileHandler
-from TSA.config import LOG_FILE
+from config import LOG_FILE
+
 
 def init_logger(log_level="INFO", rotation_limit=5):
     logger = logging.getLogger()
     logger.setLevel(log_level)
     print(f"LOG_FILE: {LOG_FILE}")
     handler = RotatingFileHandler(
-        LOG_FILE, 
+        LOG_FILE,
         maxBytes=5 * 1024 * 1024,  # 5 MB filesize limit
-        backupCount=rotation_limit
+        backupCount=rotation_limit,
     )
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     print(f"logger handlers: {logger.handlers}")
     # stream_handler = logging.StreamHandler()
@@ -31,7 +32,7 @@ def init_logger(log_level="INFO", rotation_limit=5):
     # Add handler only if not already present to avoid duplicate log entries
     if not logger.handlers:
         logger.addHandler(handler)
-    
+
     print(f"logger handlers: {logger.handlers}")
 
     # logger.info("Logger initialized ✅")

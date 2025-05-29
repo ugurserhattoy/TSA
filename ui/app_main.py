@@ -1,10 +1,10 @@
 import sys
 from PyQt6.QtWidgets import QApplication
+from config import SETTINGS_PATH
+from sponsor.settings_manager import SettingsManager
+from sponsor.init_logger import init_logger
+from ui.main_ui import TSAController
 
-from TSA.sponsor.settings_manager import SettingsManager
-from TSA.config import SETTINGS_PATH
-from TSA.sponsor.init_logger import init_logger
-from TSA.ui.main_ui import TSAController
 
 def main():
     settings_manager = SettingsManager(SETTINGS_PATH)
@@ -16,6 +16,7 @@ def main():
     window = TSAController()
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()

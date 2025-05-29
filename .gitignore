@@ -31,6 +31,7 @@ data/*
 
 # But keep this placeholder file
 !data/.gitkeep
+!data/*.icns
 
 # Ignore logs
 logs/*
@@ -40,6 +41,10 @@ logs/*
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+!tsa.spec
+
+# pre-commit
+.pre-commit-config.yaml
 
 # Installer logs
 pip-log.txt

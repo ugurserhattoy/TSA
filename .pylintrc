@@ -1,0 +1,22 @@
+[MASTER]
+ignore=__pycache__,data,logs
+extension-pkg-whitelist=PyQt6
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+disable=
+    C0103, # variable name style
+    C0114, # missing-module-docstring
+    C0115, # missing-class-docstring
+    C0116, # missing-function-docstring
+    ; W0611, # unused import
+    R0903, # too few public methods
+    ; R0902, # too many instance attributes
+
+[FORMAT]
+max-line-length=100
+
+[DESIGN]
+max-args=8
+max-locals=20
+max-attributes=15

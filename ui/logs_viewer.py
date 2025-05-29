@@ -1,7 +1,8 @@
+import os
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton
 from PyQt6.QtGui import QFont, QTextCursor
-from TSA.config import LOG_FILE
-import os
+from config import LOG_FILE
+
 
 class LogsViewer(QDialog):
     """
@@ -12,6 +13,7 @@ class LogsViewer(QDialog):
     - Refresh button to reload log content.
     - Automatically scrolls to the bottom on load.
     """
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Logs Viewer")
@@ -39,12 +41,12 @@ class LogsViewer(QDialog):
         """
         if os.path.exists(LOG_FILE):
             try:
-                with open(LOG_FILE, "r") as f:
+                with open(LOG_FILE, "r", encoding="utf-8") as f:
                     logs = f.read()
                     self.log_text.setPlainText(logs)
                     self.log_text.moveCursor(QTextCursor.MoveOperation.End)
-            except Exception as e:
-                self.display_error_message(f"Failed to read log file:\n{e}")
+            except IOError as err:
+                self.display_error_message(f"Failed to read log file:\n{err}")
         else:
             self.display_error_message("No log file found.")
 

@@ -1,7 +1,15 @@
 from PyQt6.QtWidgets import (
-    QWidget, QLabel, QComboBox, QSpinBox, QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox
+    QWidget,
+    QLabel,
+    QComboBox,
+    QSpinBox,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout,
+    QMessageBox,
 )
 from PyQt6.QtCore import pyqtSignal
+
 
 class SettingsUI(QWidget):
     settings_saved = pyqtSignal(str, int)  # log_level, rotation_limit
@@ -48,5 +56,7 @@ class SettingsUI(QWidget):
         log_level = self.log_level_combo.currentText()
         rotation_limit = self.rotation_spin.value()
         self.settings_saved.emit(log_level, rotation_limit)
-        QMessageBox.information(self, "Settings Saved", "Settings have been saved successfully.")
+        QMessageBox.information(
+            self, "Settings Saved", "Settings have been saved successfully."
+        )
         self.close()

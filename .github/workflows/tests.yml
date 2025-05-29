@@ -1,0 +1,67 @@
+name: Tests
+
+on:
+  workflow_call:
+    secrets:
+      SAFETY_API_KEY:
+        required: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black pylint bandit safety
+
+      - name: Run Unit Tests
+        run: |
+          mkdir -p badges
+          PYTHONPATH=. pytest -s tests | tee badges/unit-tests.txt
+          echo '{"label": "unit", "message": "passed", "color": "green"}' > badges/unit-tests.json
+        continue-on-error: true
+
+      - name: Record Unit Test Failure
+        if: failure()
+        run: |
+          echo '{"label": "unit", "message": "failed", "color": "red"}' > badges/unit-tests.json
+
+      - name: Code quality check
+        run: |
+          black --check --diff --color . | tee badges/black.txt || true
+          PYTHONPATH=. pylint --fail-under=8.0 $(git ls-files '*.py') | tee badges/pylint.txt
+          echo '{"label": "code", "message": "passed", "color": "green"}' > badges/code-check.json
+        continue-on-error: true
+
+      - name: Record Code Quality Failure
+        if: failure()
+        run: |
+          echo '{"label": "code", "message": "failed", "color": "red"}' > badges/code-check.json
+
+      - name: Security check
+        run: |
+          bandit -r . --exclude ./tests > badges/bandit.txt || true
+          safety --key ${{ secrets.SAFETY_API_KEY }} scan | tee badges/safety.txt
+          echo '{"label": "security", "message": "passed", "color": "green"}' > badges/security-check.json
+        continue-on-error: true
+
+      - name: Record Security Failure
+        if: failure()
+        run: |
+          echo '{"label": "security", "message": "failed", "color": "red"}' > badges/security-check.json
+
+      - name: Upload Badge Data
+        uses: actions/upload-artifact@v4
+        with:
+          name: badge-jsons
+          path: badges/
