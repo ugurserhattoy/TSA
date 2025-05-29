@@ -3,6 +3,9 @@ name: Update Test Badges
 on:
   workflow_call:
 
+permissions:
+  contents: write
+
 jobs:
   update-badges:
     runs-on: ubuntu-latest
