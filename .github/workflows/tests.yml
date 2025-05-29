@@ -48,9 +48,10 @@ jobs:
       - name: Security check
         run: |
           bandit -r . --exclude ./tests > badges/bandit.txt || true
-          safety --key ${{ secrets.SAFETY_API_KEY }} scan requirements.txt | tee badges/safety.txt
+          safety --key ${{ secrets.SAFETY_API_KEY }} scan
+          safety --key ${{ secrets.SAFETY_API_KEY }} scan | tee badges/safety.txt
           echo '{"label": "security", "message": "passed", "color": "green"}' > badges/security-check.json
-          ls -la
+          ls -la badges
         continue-on-error: true
 
       - name: Record Security Failure
