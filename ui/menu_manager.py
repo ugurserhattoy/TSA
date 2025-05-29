@@ -1,11 +1,14 @@
 """
-This module defines the MenuManager class, which handles the creation of the application's menu bar and its menus,
-including tools, settings, help, and about. It also defines signals for handling menu item interactions.
+This module defines the MenuManager class, 
+which handles the creation of the application's menu bar and its menus,
+including tools, settings, help, and about. 
+It also defines signals for handling menu item interactions.
 """
 
 from PyQt6.QtWidgets import QMenuBar, QMenu
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QObject, pyqtSignal
+
 
 class MenuManager(QObject):
     """
@@ -38,11 +41,14 @@ class MenuManager(QObject):
         """
         self.create_tools_menu()
         self.create_settings_menu()
-        self.create_help_menu()      # Placeholder for future use
-        self.create_about_menu()     # Placeholder for future use
+        self.create_help_menu()  # Placeholder for future use
+        self.create_about_menu()  # Placeholder for future use
 
         self.parent.setMenuBar(self.menu_bar)
-        print("[DEBUG] FINAL MENU HEADERS:", [action.text() for action in self.menu_bar.actions()])
+        print(
+            "[DEBUG] FINAL MENU HEADERS:",
+            [action.text() for action in self.menu_bar.actions()],
+        )
 
     def create_tools_menu(self):
         """
@@ -63,7 +69,10 @@ class MenuManager(QObject):
         settings_action.triggered.connect(self.settings_requested.emit)
         settings_menu.addAction(settings_action)
         self.menu_bar.addMenu(settings_menu)
-        print("[DEBUG] Added Settings menu:", [action.text() for action in self.menu_bar.actions()])
+        print(
+            "[DEBUG] Added Settings menu:",
+            [action.text() for action in self.menu_bar.actions()],
+        )
         print("MENU OBJECT:", settings_menu.title(), "| OBJ TYPE:", type(settings_menu))
         print("[DEBUG] Settings menu created:", settings_menu.title())
 

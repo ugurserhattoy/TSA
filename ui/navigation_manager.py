@@ -1,12 +1,13 @@
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
 
+
 class NavigationManager:
     """
     Manages the navigation controls including pagination buttons and result info display.
 
-    This class provides an interface for navigating through paginated results, 
-    allowing users to move to the previous or next page and displaying 
+    This class provides an interface for navigating through paginated results,
+    allowing users to move to the previous or next page and displaying
     the current page number along with the total number of results.
 
     Attributes:
@@ -27,7 +28,7 @@ class NavigationManager:
         """
         self.page_info_label = QLabel("Page 1")
         self.result_info_label = QLabel("0 results")
-        
+
         self.previous_button = QPushButton("Previous Page")
         self.previous_button.setFixedWidth(150)
         self.previous_button.clicked.connect(load_previous_callback)
@@ -46,7 +47,9 @@ class NavigationManager:
         nav_buttons_layout.addWidget(self.next_button)
 
         nav_layout.addLayout(nav_buttons_layout)
-        nav_layout.addWidget(self.result_info_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        nav_layout.addWidget(
+            self.result_info_label, alignment=Qt.AlignmentFlag.AlignCenter
+        )
 
         parent_layout.addLayout(nav_layout)
 

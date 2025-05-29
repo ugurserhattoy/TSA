@@ -1,8 +1,10 @@
 """
 main_ui.py
 
-This module serves as the Controller in the MVC architecture. It manages the main window of the application,
-handles user interactions, coordinates data filtering, pagination, and updating the "applied" status via checkboxes.
+This module serves as the Controller in the MVC architecture. 
+It manages the main window of the application, handles user interactions, 
+coordinates data filtering, pagination and 
+updating the "applied" status via checkboxes.
 
 Key Components:
 - TableManager: Manages the display and structure of the data table
@@ -11,28 +13,38 @@ Key Components:
 - MenuManager: Controls menu-related actions and signals
 - LogsViewer: Displays log file content in a separate window
 
-The TSAController class is the main entry point, tying together UI initialization and application logic.
+The TSAController class is the main entry point, 
+tying together UI initialization and application logic.
 """
-from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
-    QLineEdit, QPushButton, QHBoxLayout, QCheckBox, QLabel, QHeaderView
-)
+
+import platform
+import logging
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QKeySequence, QShortcut
-import platform
-from TSA.ui.table_manager import TableManager
-from TSA.ui.data_manager import DataManager
-from TSA.ui.navigation_manager import NavigationManager
-import logging
-from TSA.config import DB_PATH, SETTINGS_PATH
-from TSA.ui.menu_manager import MenuManager
-from TSA.ui.logs_viewer import LogsViewer
-from TSA.ui.settings_ui import SettingsUI
-from TSA.sponsor.settings_manager import SettingsManager
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QVBoxLayout,
+    QTableWidgetItem,
+    QLineEdit,
+    QPushButton,
+    QHBoxLayout,
+    QCheckBox,
+    QLabel,
+    QHeaderView,
+)
+from config import DB_PATH, SETTINGS_PATH
+from ui.table_manager import TableManager
+from ui.data_manager import DataManager
+from ui.navigation_manager import NavigationManager
+from ui.menu_manager import MenuManager
+from ui.logs_viewer import LogsViewer
+from ui.settings_ui import SettingsUI
+from sponsor.settings_manager import SettingsManager
+
 
 logger = logging.getLogger()
 
-from PyQt6.QtWidgets import QMainWindow
 
 class TSAController(QMainWindow):
     """
@@ -41,13 +53,14 @@ class TSAController(QMainWindow):
     Initializes the main window, sets up UI components, connects user interactions to logic,
     and handles loading and updating sponsor data.
     """
+
     def __init__(self):
         """
         Initializes the TSAController, sets up data and UI components.
         Establishes database connection and triggers the first data load.
         """
         # print("Database path:", DB_PATH)
-        logger.info(f"DB Path: {DB_PATH}")
+        logger.info("DB Path: %s", DB_PATH)
         super().__init__()
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
@@ -55,9 +68,13 @@ class TSAController(QMainWindow):
         # Initialize TableManager before UI
         self.table_manager = TableManager()
 
-        # Initialize SettingsManager 
+        # Initialize SettingsManager
         self.settings = SettingsManager(SETTINGS_PATH)
-        
+
+        self.logs_viewer = None
+        self.settings_ui = None
+        self.current_page = 0
+
         self.initUI()
         self.load_data_page()  # Initial data load after UI setup
 
@@ -75,13 +92,12 @@ class TSAController(QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.page_size = 50
-        self.current_page = 0
 
         # Filter section
         self.filter_layout = QHBoxLayout()
         self.city_input = QLineEdit()
         self.city_input.setPlaceholderText("Filter by City")
-        self.city_input.returnPressed.connect(self.apply_filter) # Enter
+        self.city_input.returnPressed.connect(self.apply_filter)  # Enter
         self.org_input = QLineEdit()
         self.org_input.setPlaceholderText("Filter by Organisation")
         self.org_input.returnPressed.connect(self.apply_filter)
@@ -103,7 +119,7 @@ class TSAController(QMainWindow):
             self.layout,
             # self.apply_filter,
             self.load_next_page,
-            self.load_prev_page
+            self.load_prev_page,
         )
 
         # Menu
@@ -180,11 +196,17 @@ class TSAController(QMainWindow):
         Adjusts headers and section sizes.
         """
         self.table_manager.table.verticalHeader().setVisible(True)
-        self.table_manager.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.table_manager.table.verticalHeader().setDefaultAlignment(
+            Qt.AlignmentFlag.AlignCenter
+        )
         self.table_manager.table.setWordWrap(False)
-        self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.table_manager.table.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Fixed
+        )
         self.table_manager.table.verticalHeader().setDefaultSectionSize(24)
-        self.table_manager.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.table_manager.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Interactive
+        )
         self.layout.addWidget(self.table_manager.table)
 
     def resizeEvent(self, event):
@@ -192,7 +214,9 @@ class TSAController(QMainWindow):
         Handles window resize events to adjust column widths dynamically.
         """
         super().resizeEvent(event)
-        self.table_manager.adjust_column_widths(self.table_manager.table.viewport().width())
+        self.table_manager.adjust_column_widths(
+            self.table_manager.table.viewport().width()
+        )
 
     def apply_filter(self):
         self.current_page = 0
@@ -219,19 +243,25 @@ class TSAController(QMainWindow):
         self.table_manager.table.setRowCount(len(rows))
 
         self.table_manager.table.setColumnCount(6)
-        self.table_manager.table.setHorizontalHeaderLabels(["Organisation", "City", "County", "Type & Rating", "Route", "Applied"])
+        self.table_manager.table.setHorizontalHeaderLabels(
+            ["Organisation", "City", "County", "Type & Rating", "Route", "Applied"]
+        )
 
         for row_idx, row_data in enumerate(rows):
             for col_idx, value in enumerate(row_data[:-1]):
-                self.table_manager.table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+                self.table_manager.table.setItem(
+                    row_idx, col_idx, QTableWidgetItem(str(value))
+                )
             checkbox = QCheckBox()
             checkbox.setChecked(bool(row_data[-1]))
-            checkbox.stateChanged.connect(lambda state, row=row_idx: self.toggle_applied(row + offset, state))
+            checkbox.stateChanged.connect(
+                lambda state, row=row_idx: self.toggle_applied(row + offset, state)
+            )
             self.table_manager.table.setCellWidget(row_idx, 5, checkbox)
 
         page_info = f"Page {self.current_page + 1}"
         result_info = f"{total_results} results"
-        logger.debug(f"Page info: {page_info}, Result info: {result_info}")
+        logger.debug("Page info: %s, Result info: %s", page_info, result_info)
         self.navigation_manager.set_page_info(page_info)
         self.navigation_manager.set_result_info(result_info)
 
@@ -241,7 +271,9 @@ class TSAController(QMainWindow):
                 item = QTableWidgetItem()
                 self.table_manager.table.setVerticalHeaderItem(row_idx, item)
             item.setText(str(offset + row_idx + 1))
-        self.table_manager.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.table_manager.table.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
 
     def load_next_page(self):
         self.current_page += 1
@@ -256,7 +288,7 @@ class TSAController(QMainWindow):
         self.logs_viewer = LogsViewer()
         self.logs_viewer.show()
 
-    # Settings    
+    # Settings
     def show_settings_ui(self):
         """Opens the settings UI window for log preferences."""
         print("[DEBUG] show_settings_ui triggered")
@@ -271,8 +303,8 @@ class TSAController(QMainWindow):
         """Handles saving settings from the UI."""
         self.settings.set_log_level(log_level)
         self.settings.set_log_rotation_limit(rotation_limit)
-        logger.info(f"Settings updated: level={log_level}, rotation={rotation_limit}")
-        
+        logger.info("Settings updated: level=%s, rotation=%s", log_level, rotation_limit)
+
     def toggle_applied(self, row_idx, state):
         """
         Triggered when a checkbox is toggled.
@@ -295,4 +327,7 @@ class TSAController(QMainWindow):
             current_status = 1 if state == Qt.CheckState.Checked.value else 0
             self.data_manager.toggle_applied(organisation_name, city, current_status)
 
-            logger.info(f"Updated '{organisation_name}' to {'applied' if current_status else 'not applied'}")
+            logger.info(
+                "Updated '%s' to {'applied' if current_status else 'not applied'}",
+                organisation_name
+            )

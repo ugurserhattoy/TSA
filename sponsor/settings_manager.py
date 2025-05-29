@@ -1,5 +1,8 @@
 import json
 import os
+import logging
+from json import JSONDecodeError
+
 
 class SettingsManager:
     """
@@ -7,14 +10,12 @@ class SettingsManager:
     Currently supports log rotation limit settings.
     """
 
-    DEFAULT_SETTINGS = {
-        "log_rotation_limit": 5,
-        "log_level": "INFO"
-    }
+    DEFAULT_SETTINGS = {"log_rotation_limit": 5, "log_level": "INFO"}
 
     def __init__(self, config_path):
         self.config_path = config_path
         self.settings = self.load_settings()
+        self.logger = logging.getLogger()
 
     def load_settings(self):
         """
@@ -22,13 +23,15 @@ class SettingsManager:
         """
         if os.path.exists(self.config_path):
             try:
-                with open(self.config_path, "r") as f:
+                with open(self.config_path, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except Exception:
-                pass
+            except (OSError, JSONDecodeError) as err:
+                self.logger.error('❌ JSON file not loaded: %s', err)
+                raise
+
         os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
         default_copy = self.DEFAULT_SETTINGS.copy()
-        with open(self.config_path, "w") as f:
+        with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(default_copy, f, indent=4)
         return default_copy
         # return self.DEFAULT_SETTINGS.copy()
@@ -37,14 +40,16 @@ class SettingsManager:
         """
         Save the current settings to the JSON file.
         """
-        with open(self.config_path, "w") as f:
+        with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(self.settings, f, indent=4)
 
     def get_log_rotation_limit(self):
         """
         Get the configured log rotation limit.
         """
-        return self.settings.get("log_rotation_limit", self.DEFAULT_SETTINGS["log_rotation_limit"])
+        return self.settings.get(
+            "log_rotation_limit", self.DEFAULT_SETTINGS["log_rotation_limit"]
+        )
 
     def get_log_level(self):
         """

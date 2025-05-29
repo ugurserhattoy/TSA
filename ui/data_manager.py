@@ -1,10 +1,12 @@
 import sqlite3
-from TSA.sponsor.csv_manager import CSVManager
-from TSA.sponsor.transform_db import TransformDB
-from TSA.config import DB_PATH
 import logging
+from sponsor.csv_manager import CSVManager
+from sponsor.transform_db import TransformDB
+from config import DB_PATH
+
 
 logger = logging.getLogger()
+
 
 class DataManager:
     def __init__(self):
@@ -27,10 +29,13 @@ class DataManager:
     def toggle_applied(self, organisation_name, town_city, new_status):
         if not self.conn:
             logger.warning("[TOGGLE] conn is None")
-            return
-        
-        logger.debug(f"[TOGGLE] updating: '{organisation_name}' | '{town_city}' → {new_status}")
-        
+            return None
+
+        logger.debug(
+            "[TOGGLE] updating: '%s' | '%s' → %s",
+            organisation_name, town_city, new_status
+        )
+
         cursor = self.conn.cursor()
         cursor.execute(
             """
@@ -39,7 +44,7 @@ class DataManager:
             WHERE LOWER(TRIM(organisation_name)) = LOWER(TRIM(?))
             AND LOWER(TRIM(town_city)) = LOWER(TRIM(?))
             """,
-            (new_status, organisation_name, town_city)
+            (new_status, organisation_name, town_city),
         )
         self.conn.commit()
         # logger.info(f"[TOGGLE] Updated rows: {cursor.rowcount}")

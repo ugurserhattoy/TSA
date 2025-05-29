@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QTableWidget, QHeaderView, QVBoxLayout
 
+
 class TableManager:
     """View class responsible for setting up and managing the sponsor table display."""
 
@@ -15,7 +16,9 @@ class TableManager:
             parent_layout (QVBoxLayout): The layout to which the table is added.
         """
         self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels(["Organisation", "City", "County", "Type & Rating", "Route", "Applied"])
+        self.table.setHorizontalHeaderLabels(
+            ["Organisation", "City", "County", "Type & Rating", "Route", "Applied"]
+        )
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setAlternatingRowColors(True)
@@ -48,8 +51,12 @@ class TableManager:
         fixed_columns_width = 80  # Applied column
         remaining_width = table_width - fixed_columns_width
         # Distribute remaining width proportionally
-        self.table.setColumnWidth(0, max(200, int(remaining_width * 0.3)))  # Organisation
+        self.table.setColumnWidth(
+            0, max(200, int(remaining_width * 0.3))
+        )  # Organisation
         self.table.setColumnWidth(1, max(100, int(remaining_width * 0.15)))  # City
         self.table.setColumnWidth(2, max(100, int(remaining_width * 0.15)))  # County
-        self.table.setColumnWidth(3, max(120, int(remaining_width * 0.2)))  # Type & Rating
+        self.table.setColumnWidth(
+            3, max(120, int(remaining_width * 0.2))
+        )  # Type & Rating
         self.table.setColumnWidth(4, max(120, int(remaining_width * 0.2)))  # Route

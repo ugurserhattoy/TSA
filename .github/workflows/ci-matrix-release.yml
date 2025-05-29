@@ -1,0 +1,121 @@
+name: TSA Pipeline
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # manual trigger
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          PYTHONPATH=. pytest -s tests
+
+      - name: Code quality check (black + pylint)
+        run: |
+          pip install black pylint
+          black --check --diff --color .
+          PYTHONPATH=. pylint --fail-under=8.0 $(git ls-files '*.py')
+      
+      - name: Security check (bandit + safety)
+        run: |
+          pip install bandit safety
+          bandit -r . --exclude ./tests
+          safety auth --api-key ${{ secrets.SAFETY_API_KEY }}
+          safety scan -r requirements.txt
+
+  build:
+    name: Build & Release TSA
+    needs: test
+    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: >
+      startsWith(github.ref, 'refs/tags/v') &&
+      github.event.base_ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          if [ "${{ runner.os }}" = "macOS" ]; then brew install create-dmg; fi
+
+      - name: Build app with PyInstaller
+        run: pyinstaller tsa.spec
+
+      - name: Create DMG (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          create-dmg \
+            --volname "TSA" \
+            --volicon "data/tsa_icon.icns" \
+            --window-pos 200 120 \
+            --window-size 500 300 \
+            --icon-size 100 \
+            --icon "TSA.app" 100 100 \
+            --app-drop-link 375 100 \
+            dist/TSA.dmg \
+            dist/TSA.app
+
+      - name: Create archive (Windows/Linux)
+        if: runner.os != 'macOS'
+        run: |
+          cd dist && zip -r TSA-${{ runner.os }}.zip TSA
+
+      - name: Generate checksum
+        run: |
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
+          elif [ "${{ runner.os }}" = "Windows" ]; then
+            CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
+          else
+            sha256sum dist/TSA/TSA > dist/TSA.sha256
+          fi
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/TSA.dmg
+            dist/TSA.dmg.sha256
+            dist/TSA-Windows.zip
+            dist/TSA.exe.sha256
+            dist/TSA-Linux.zip
+            dist/TSA.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
