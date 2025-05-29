@@ -67,10 +67,16 @@ jobs:
             dist/TSA.dmg \
             dist/TSA.app
 
-      - name: Create archive (Windows/Linux)
-        if: runner.os != 'macOS'
+      - name: Create Linux archive
+        if: runner.os == 'Linux'
         run: |
-          cd dist && zip -r TSA-${{ runner.os }}.zip TSA
+          cd dist && zip -r TSA-Linux.zip TSA
+
+      - name: Create Windows archive
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist\TSA -DestinationPath dist\TSA-Windows.zip
 
       - name: Generate checksum
         run: |
