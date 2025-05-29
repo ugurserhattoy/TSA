@@ -31,7 +31,7 @@ data/*
 
 # But keep this placeholder file
 !data/.gitkeep
-!data/*.icns
+!data/tsa_icon.*
 
 # Ignore logs
 logs/*
