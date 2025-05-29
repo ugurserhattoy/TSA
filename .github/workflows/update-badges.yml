@@ -8,16 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: Checkout badges branch
+      - name: Copy badge jsons to branch
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git clone --depth 1 --branch badges https://github.com/${{ github.repository }} badge-repo
-
-      - name: Copy badge files
-        run: |
+          git clone --depth 1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} badge-repo
           cp -r test-results/* badge-repo/
           cd badge-repo
+          git switch badges || git switch -c badges
+
+      - name: Push updates in badge branch
+        run: |
           git add .
           git commit -m "Update badges [skip ci]" || echo "No changes to commit"
           git push

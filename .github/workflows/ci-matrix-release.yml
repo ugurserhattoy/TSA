@@ -15,6 +15,7 @@ jobs:
   
   update-badges:
     uses: ./.github/workflows/update-badges.yml
+    needs: tests
 
   build:
     name: Build & Release TSA
