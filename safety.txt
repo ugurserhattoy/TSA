@@ -1,0 +1,21 @@
+Safety 3.5.1 scanning /home/runner/work/TSA/TSA
+2025-05-29 14:36:27 UTC
+
+Account: API key used
+Project: tsa
+ Git branch: packaging
+ Environment: Stage.development
+ Scan policy: fetched from Safety Platform, ignoring any local Safety CLI policy
+files
+
+Python detected. Found 1 Python requirement file
+
+✅ requirements.txt: No issues found.
+
+Tested 27 dependencies for security issues using policy fetched from Safety 
+Platform
+0 security issues found, 0 fixes suggested.
+0 fixes suggested, resolving 0 vulnerabilities.
+
+Project dashboard: 
+https://platform.safetycli.com/codebases/tsa/findings?branch=packaging
