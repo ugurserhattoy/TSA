@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - name: Download badge jsons from artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: badge-jsons
+
       - name: Copy badge jsons to branch
         run: |
           git config --global user.name "github-actions"
