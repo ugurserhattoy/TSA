@@ -24,7 +24,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           mkdir -p badges
-          pytest > badges/unit-tests.txt
+          PYTHONPATH=. pytest -s tests | tee badges/unit-tests.txt
           echo '{"label": "unit", "message": "passed", "color": "green"}' > badges/unit-tests.json
         continue-on-error: true
 
@@ -35,8 +35,8 @@ jobs:
 
       - name: Code quality check
         run: |
-          black --check --diff --color . > badges/black.txt || true
-          PYTHONPATH=. pylint --fail-under=8.0 $(git ls-files '*.py') > badges/pylint.txt
+          black --check --diff --color . | tee badges/black.txt || true
+          PYTHONPATH=. pylint --fail-under=8.0 $(git ls-files '*.py') | tee badges/pylint.txt
           echo '{"label": "code", "message": "passed", "color": "green"}' > badges/code-check.json
         continue-on-error: true
 
@@ -48,7 +48,7 @@ jobs:
       - name: Security check
         run: |
           bandit -r . --exclude ./tests > badges/bandit.txt || true
-          safety --key ${{ secrets.SAFETY_API_KEY }} scan -r requirements.txt > badges/safety.txt
+          safety --key ${{ secrets.SAFETY_API_KEY }} scan -r requirements.txt | tee badges/safety.txt
           echo '{"label": "security", "message": "passed", "color": "green"}' > badges/security-check.json
         continue-on-error: true
 
