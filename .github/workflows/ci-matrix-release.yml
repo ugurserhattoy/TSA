@@ -73,13 +73,14 @@ jobs:
         shell: pwsh
         run: |
           Compress-Archive -Path dist\TSA -DestinationPath dist\TSA-Windows.zip
-          CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
+          CertUtil -hashfile dist/TSA.exe SHA256 > dist/TSA.exe.sha256
 
       - name: Create Linux archive and SHA256
         if: runner.os == 'Linux'
         run: |
-          cd dist && zip -r TSA-Linux.zip TSA
-          sha256sum dist/TSA/TSA > dist/TSA.sha256
+          cd dist
+          zip -r TSA-Linux.zip TSA
+          sha256sum TSA/TSA > TSA.sha256
 
       # - name: Generate checksum
       #   run: |
