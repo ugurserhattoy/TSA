@@ -1,5 +1,5 @@
 ![Unit Tests](https://img.shields.io/endpoint?url=https://ugurserhattoy.github.io/TSA/badges/unit-tests.json&logo=pytest&logoColor=white)
-![Code Quality](https://img.shields.io/endpoint?url=https://ugurserhattoy.github.io/TSA/badges/code-check.json&logo=freecodecamp&logoColor=white)
+![Code Quality](https://img.shields.io/endpoint?url=https://ugurserhattoy.github.io/TSA/badges/code-check.json&logo=freecodecamp&logoColor=darkblue)
 ![Security](https://img.shields.io/endpoint?url=https://ugurserhattoy.github.io/TSA/badges/security-check.json&logo=svelte&logoColor=%23EA0016)
 
 # TSA - Track Sponsored Applications

@@ -1,4 +1,4 @@
-### 🔖 Warnings!
+### 🔖 To be warn!
 
-- [ ] Have you tagged? (`vX.Y.Z`) (If not build & release won't work!)
 - [ ] Tests must be successful.
+- [ ] Only main branch releases will be pushed.
