@@ -6,6 +6,8 @@ on:
       - 'release/*'
       - 'feature/*'
       - 'hotfix/*'
+    tags:
+      - 'v*'
     paths-ignore:
       - '**.md'
   pull_request:
