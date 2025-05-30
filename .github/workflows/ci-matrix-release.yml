@@ -6,6 +6,8 @@ on:
       - 'release/*'
       - 'feature/*'
       - 'hotfix/*'
+    tags:
+      - 'v*'
     paths-ignore:
       - '**.md'
   pull_request:
@@ -93,7 +95,7 @@ jobs:
       #     fi
 
       - name: Upload to Release
-        if: github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
