@@ -11,11 +11,7 @@ on:
       - 'v*'
     paths-ignore:
       - '**.md'
-  # pull_request:
-  #   branches:
-  #     - main
-  #   paths-ignore:
-  #     - '**.md'
+
   workflow_dispatch: # manual trigger
 
 permissions:
@@ -28,6 +24,7 @@ jobs:
       SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
   
   update-badges:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/update-badges.yml
     needs: tests
 
@@ -84,16 +81,6 @@ jobs:
           cd dist
           zip -r TSA-Linux.zip TSA
           sha256sum TSA/TSA > TSA.sha256
-
-      # - name: Generate checksum
-      #   run: |
-      #     if [ "${{ runner.os }}" == "macOS" ]; then
-      #       shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
-      #     elif [ "${{ runner.os }}" = "Windows" ]; then
-      #       CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
-      #     else
-      #       sha256sum dist/TSA/TSA > dist/TSA.sha256
-      #     fi
 
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
