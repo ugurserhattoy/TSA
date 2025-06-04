@@ -44,10 +44,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-      #
-      - name: Update and Install system packages for PyQt6
-        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-x11-0 libxcb-cursor0
-      # If It works will be added to req file
       
       - name: Install dependencies
         run: |
