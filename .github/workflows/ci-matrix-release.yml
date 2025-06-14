@@ -138,7 +138,7 @@ jobs:
         shell: cmd
         run: |
           iscc tsa.iss
-          mv TSASetup.exe dist/TSA-Win.exe
+          mv TSAInstaller.exe dist/TSA-Win.exe
 
       - name: Create SHA256 for Windows installer
         if: runner.os == 'Windows'

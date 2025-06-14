@@ -1,7 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# import sys
 import os
-# import glob
 
 icon_file = os.path.join('data', 'tsa_icon.ico')
 
