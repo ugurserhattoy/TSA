@@ -80,7 +80,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y libfuse2
-          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage -O appimagetool
+          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
           chmod +x appimagetool
 
       - name: Create AppDir and populate it
