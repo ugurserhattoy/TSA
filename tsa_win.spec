@@ -23,7 +23,7 @@ exe = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    exclude_binaries=False,
+    exclude_binaries=True,
     name='TSA',
     debug=False,
     bootloader_ignore_signals=False,
@@ -32,12 +32,12 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch=None,
+    target_arch="x86_64",
     codesign_identity=None,
     entitlements_file=None,
     icon=icon_file,
     # onedir build
-    singlefile=False
+    singlefile=True
 )
 
 coll = COLLECT(
