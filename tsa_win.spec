@@ -1,28 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 # import sys
 import os
-import glob
+# import glob
 
-usr_libs = []
-
-icon_file = os.path.join('data', 'tsa_icon.png')
-base_path = '/usr/lib/**/'
-#    tmp_so = '/tmp/libpython3.12.so'
-so_list = [
-    'libpython3.12.so.1.0',
-#        'libc.so.6',
-#        'libdl.so.2',
-#        'libm.so.6',
-#        'libutil.so.1',
-#        'libpthread.so.0'
-]
-for s in so_list:
-    usr_libs += [
-        (f, '_internal') for f in glob.glob(base_path + s, recursive=True)
-        if not os.path.islink(f)
-    ]
-#    os.system('cp %s %s' % (usr_libs[0][0], tmp_so))
-#    usr_libs.append((tmp_so, '_internal'))
+icon_file = os.path.join('data', 'tsa_icon.ico')
 
 
 a = Analysis(
@@ -44,7 +25,7 @@ exe = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    exclude_binaries=True,
+    exclude_binaries=False,
     name='TSA',
     debug=False,
     bootloader_ignore_signals=False,
@@ -57,8 +38,8 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=icon_file,
-    # Enable onefile build
-    singlefile=True
+    # onedir build
+    singlefile=False
 )
 
 coll = COLLECT(

@@ -1,0 +1,19 @@
+[Setup]
+AppName=TSA
+AppVersion=@VERSION@
+DefaultDirName={pf}\TSA
+DefaultGroupName=TSA
+OutputBaseFilename=TSAInstaller
+Compression=lzma
+SolidCompression=yes
+SetupIconFile=data\tsa_icon.ico
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Files]
+Source: "dist\TSA\*"; DestDir: "{app}"; Flags: recursesubdirs
+
+[Icons]
+Name: "{group}\TSA"; Filename: "{app}\TSA.exe"
+Name: "{group}\Uninstall TSA"; Filename: "{uninstallexe}"

@@ -48,14 +48,32 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Build app with tsa_mac.spec (macOS)
+      
+      # == Mac ==
+      - name: Build app for mac
         if: runner.os == 'macOS'
         run: pyinstaller tsa_mac.spec
-
-      - name: Build app with tsa.spec (Linux & Windows)
+      
+      - name: Create DMG and SHA256
+        if: runner.os == 'macOS'
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "TSA" \
+            --volicon "data/tsa_icon.icns" \
+            --window-pos 200 120 \
+            --window-size 500 300 \
+            --icon-size 100 \
+            --icon "TSA.app" 100 100 \
+            --app-drop-link 375 100 \
+            dist/TSA.dmg \
+            dist/TSA.app
+          shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
+      
+      # == Linux ==
+      - name: Build app for Linux
         if: runner.os == 'Linux'
-        run: pyinstaller tsa.spec
+        run: pyinstaller tsa_linux.spec
 
       - name: Install AppImage tool (Linux only)
         if: runner.os == 'Linux'
@@ -86,35 +104,41 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           ./appimagetool TSA.AppDir dist/TSA.AppImage
-
-      - name: Create DMG and SHA256
-        if: runner.os == 'macOS'
-        run: |
-          brew install create-dmg
-          create-dmg \
-            --volname "TSA" \
-            --volicon "data/tsa_icon.icns" \
-            --window-pos 200 120 \
-            --window-size 500 300 \
-            --icon-size 100 \
-            --icon "TSA.app" 100 100 \
-            --app-drop-link 375 100 \
-            dist/TSA.dmg \
-            dist/TSA.app
-          shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
-
-      - name: Create Windows archive and SHA256
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Compress-Archive -Path dist\TSA -DestinationPath dist\TSA-Windows.zip
-          CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
-
+      
       - name: Create Linux archive and SHA256
         if: runner.os == 'Linux'
         run: |
           sha256sum dist/TSA.AppImage > dist/TSA.AppImage.sha256
+  
+      # == Windows ==
+      - name: Build app for Windows
+        if: runner.os == 'Windows'
+        run: pyinstaller tsa_win.spec
 
+      - name: Generate tsa.iss from template
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          sed "s/@VERSION@/$VERSION/" tsa.iss.in > tsa.iss
+
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        run: choco install innosetup --yes
+
+      - name: Compile Inno Setup installer
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          iscc tsa.iss
+          mv TSASetup.exe dist/TSA-Win.exe
+
+      - name: Create SHA256 for Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: CertUtil -hashfile dist/TSA-Win.exe SHA256 > dist/TSA-Win.sha256
+
+      # == Upload Release ==
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
@@ -122,8 +146,8 @@ jobs:
           files: |
             dist/TSA.dmg
             dist/TSA.dmg.sha256
-            dist/TSA-Windows.zip
-            dist/TSA.exe.sha256
+            dist/TSA-Win.exe
+            dist/TSA-Win.sha256
             dist/TSA.AppImage
             dist/TSA.AppImage.sha256
         env:
