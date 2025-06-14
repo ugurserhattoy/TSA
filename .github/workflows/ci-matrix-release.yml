@@ -118,8 +118,15 @@ jobs:
       - name: Generate tsa.iss from template
         if: runner.os == 'Windows'
         shell: bash
+        # VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+        # sed "s/@VERSION@/$VERSION/" tsa.iss.in > tsa.iss
         run: |
-          VERSION=$(git describe --tags --abbrev=0)
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="0.0.0-dev"
+          fi
+          echo "$VERSION"
           sed "s/@VERSION@/$VERSION/" tsa.iss.in > tsa.iss
 
       - name: Install Inno Setup
