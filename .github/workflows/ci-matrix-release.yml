@@ -49,8 +49,43 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Build app with PyInstaller
-        run: pyinstaller --noconsole --onefile tsa.spec
+      - name: Build app with tsa_mac.spec (macOS)
+        if: runner.os == 'macOS'
+        run: pyinstaller tsa_mac.spec
+
+      - name: Build app with tsa.spec (Linux & Windows)
+        if: runner.os == 'Linux'
+        run: pyinstaller tsa.spec
+
+      - name: Install AppImage tool (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          sudo apt install -y libfuse2
+          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage -O appimagetool
+          chmod +x appimagetool
+
+      - name: Create AppDir and populate it
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p TSA.AppDir/usr/bin
+          cp -r dist/TSA/* TSA.AppDir/usr/bin/
+          chmod +x TSA.AppDir/usr/bin/TSA
+          ln -sf ./usr/bin/TSA TSA.AppDir/AppRun
+          cat <<EOF > TSA.AppDir/tsa.desktop
+          [Desktop Entry]
+          Name=TSA
+          Exec=TSA
+          Icon=tsa_icon
+          Type=Application
+          Categories=Utility;
+          EOF
+          cp data/tsa_icon.png TSA.AppDir/tsa_icon.png
+
+      - name: Build Linux AppImage
+        if: runner.os == 'Linux'
+        run: |
+          ./appimagetool TSA.AppDir dist/TSA.AppImage
 
       - name: Create DMG and SHA256
         if: runner.os == 'macOS'
@@ -78,9 +113,7 @@ jobs:
       - name: Create Linux archive and SHA256
         if: runner.os == 'Linux'
         run: |
-          cd dist
-          zip -r TSA-Linux.zip TSA
-          sha256sum TSA/TSA > TSA.sha256
+          sha256sum dist/TSA.AppImage > dist/TSA.AppImage.sha256
 
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -91,7 +124,7 @@ jobs:
             dist/TSA.dmg.sha256
             dist/TSA-Windows.zip
             dist/TSA.exe.sha256
-            dist/TSA-Linux.zip
-            dist/TSA.sha256
+            dist/TSA.AppImage
+            dist/TSA.AppImage.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -18,10 +18,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      #
       - name: Update and Install system packages for PyQt6
-        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-x11-0 libxcb-cursor0
-      # If It works will be added to req file
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            libxkbcommon-x11-0 libxcb-cursor0 \
+            libegl1 libgl1 libglib2.0-0 libx11-xcb1 libxcb-glx0 libdbus-1-3
 
       - name: Install dependencies
         run: |
