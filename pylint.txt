@@ -1,31 +1,4 @@
-************* Module app_main
-ui/app_main.py:2:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/app_main.py:2:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
-************* Module logs_viewer
-ui/logs_viewer.py:2:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/logs_viewer.py:2:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
-ui/logs_viewer.py:3:0: E0401: Unable to import 'PyQt6.QtGui' (import-error)
-ui/logs_viewer.py:3:0: E0611: No name 'QtGui' in module 'PyQt6' (no-name-in-module)
-************* Module main_ui
-ui/main_ui.py:23:0: E0401: Unable to import 'PyQt6.QtGui' (import-error)
-ui/main_ui.py:23:0: E0611: No name 'QtGui' in module 'PyQt6' (no-name-in-module)
-ui/main_ui.py:24:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/main_ui.py:24:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
-************* Module menu_manager
-ui/menu_manager.py:8:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/menu_manager.py:8:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
-ui/menu_manager.py:9:0: E0401: Unable to import 'PyQt6.QtGui' (import-error)
-ui/menu_manager.py:9:0: E0611: No name 'QtGui' in module 'PyQt6' (no-name-in-module)
-************* Module navigation_manager
-ui/navigation_manager.py:1:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/navigation_manager.py:1:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
-************* Module settings_ui
-ui/settings_ui.py:1:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/settings_ui.py:1:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
-************* Module table_manager
-ui/table_manager.py:1:0: E0401: Unable to import 'PyQt6.QtWidgets' (import-error)
-ui/table_manager.py:1:0: E0611: No name 'QtWidgets' in module 'PyQt6' (no-name-in-module)
 
------------------------------------
-Your code has been rated at 8.36/10
+------------------------------------
+Your code has been rated at 10.00/10
 

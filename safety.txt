@@ -1,7 +1,0 @@
-Safety 3.5.1 scanning /home/runner/work/TSA/TSA
-2025-06-01 22:07:18 UTC
-Safety found an existing codebase with this name in your organization:
-  Codebase name: tsa                                                            
-  Codebase admin: ugurserhattoy@gmail.com                                       
-
-Do you want to link it with this existing codebase? [y/n] (y): 
