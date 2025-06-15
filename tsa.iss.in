@@ -1,0 +1,26 @@
+[Setup]
+AppName=TSA
+AppVersion=@VERSION@
+ArchitecturesInstallIn64BitMode=x64compatible
+DefaultDirName={autopf}\TSA
+DefaultGroupName=TSA
+OutputBaseFilename=TSAInstaller
+Compression=lzma
+SolidCompression=yes
+SetupIconFile=data\tsa_icon.ico
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Files]
+Source: "dist\TSA\*"; DestDir: "{app}"; Flags: recursesubdirs
+
+[Icons]
+Name: "{group}\TSA"; Filename: "{app}\TSA.exe"
+Name: "{group}\Uninstall TSA"; Filename: "{uninstallexe}"
+
+[Code]
+procedure DeinitializeUninstall();
+begin
+  MsgBox('Some files in user home might remain!', mbInformation, MB_OK);
+end;

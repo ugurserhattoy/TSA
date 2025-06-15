@@ -44,14 +44,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-
+      
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Build app with PyInstaller
-        run: pyinstaller tsa.spec
-
+      
+      # == Mac ==
+      - name: Build app for mac
+        if: runner.os == 'macOS'
+        run: pyinstaller tsa_mac.spec
+      
       - name: Create DMG and SHA256
         if: runner.os == 'macOS'
         run: |
@@ -67,21 +69,83 @@ jobs:
             dist/TSA.dmg \
             dist/TSA.app
           shasum -a 256 dist/TSA.dmg > dist/TSA.dmg.sha256
+      
+      # == Linux ==
+      - name: Build app for Linux
+        if: runner.os == 'Linux'
+        run: pyinstaller tsa_linux.spec
 
-      - name: Create Windows archive and SHA256
-        if: runner.os == 'Windows'
-        shell: pwsh
+      - name: Install AppImage tool (Linux only)
+        if: runner.os == 'Linux'
         run: |
-          Compress-Archive -Path dist\TSA -DestinationPath dist\TSA-Windows.zip
-          CertUtil -hashfile dist/TSA/TSA.exe SHA256 > dist/TSA.exe.sha256
+          sudo apt update
+          sudo apt install -y libfuse2
+          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
 
+      - name: Create AppDir and populate it
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p TSA.AppDir/usr/bin
+          cp -r dist/TSA/* TSA.AppDir/usr/bin/
+          chmod +x TSA.AppDir/usr/bin/TSA
+          ln -sf ./usr/bin/TSA TSA.AppDir/AppRun
+          cat <<EOF > TSA.AppDir/tsa.desktop
+          [Desktop Entry]
+          Name=TSA
+          Exec=TSA
+          Icon=tsa_icon
+          Type=Application
+          Categories=Utility;
+          EOF
+          cp data/tsa_icon.png TSA.AppDir/tsa_icon.png
+
+      - name: Build Linux AppImage
+        if: runner.os == 'Linux'
+        run: |
+          ./appimagetool TSA.AppDir dist/TSA.AppImage
+      
       - name: Create Linux archive and SHA256
         if: runner.os == 'Linux'
         run: |
-          cd dist
-          zip -r TSA-Linux.zip TSA
-          sha256sum TSA/TSA > TSA.sha256
+          sha256sum dist/TSA.AppImage > dist/TSA.AppImage.sha256
+  
+      # == Windows ==
+      - name: Build app for Windows
+        if: runner.os == 'Windows'
+        run: pyinstaller tsa_win.spec
 
+      - name: Generate tsa.iss from template
+        if: runner.os == 'Windows'
+        shell: bash
+        # VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+        # sed "s/@VERSION@/$VERSION/" tsa.iss.in > tsa.iss
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="0.0.0-dev"
+          fi
+          echo "$VERSION"
+          sed "s/@VERSION@/$VERSION/" tsa.iss.in > tsa.iss
+
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        run: choco install innosetup --yes
+
+      - name: Compile Inno Setup installer
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          iscc tsa.iss
+          mv Output/TSAInstaller.exe dist/TSA-Win.exe
+
+      - name: Create SHA256 for Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: CertUtil -hashfile dist/TSA-Win.exe SHA256 > dist/TSA-Win.sha256
+
+      # == Upload Release ==
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
@@ -89,9 +153,9 @@ jobs:
           files: |
             dist/TSA.dmg
             dist/TSA.dmg.sha256
-            dist/TSA-Windows.zip
-            dist/TSA.exe.sha256
-            dist/TSA-Linux.zip
-            dist/TSA.sha256
+            dist/TSA-Win.exe
+            dist/TSA-Win.sha256
+            dist/TSA.AppImage
+            dist/TSA.AppImage.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

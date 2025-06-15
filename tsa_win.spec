@@ -1,13 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-import sys
 import os
 
-if sys.platform == 'win32':
-    icon_file = os.path.join('data', 'tsa_icon.ico')
-elif sys.platform == 'darwin':
-    icon_file = os.path.join('data', 'tsa_icon.icns')
-else:
-    icon_file = os.path.join('data', 'tsa_icon.png')
+icon_file = os.path.join('data', 'tsa_icon.ico')
+
 
 a = Analysis(
     ['ui/app_main.py'],
@@ -16,8 +11,8 @@ a = Analysis(
     datas=[],
     hiddenimports=[],
     hookspath=[],
-    hooksconfig={},
     runtime_hooks=[],
+    hooksconfig={},
     excludes=[],
     noarchive=False,
     optimize=0,
@@ -27,7 +22,7 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
-    [],
+    a.binaries,
     exclude_binaries=True,
     name='TSA',
     debug=False,
@@ -37,23 +32,20 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch=None,
+    target_arch="x86_64",
     codesign_identity=None,
     entitlements_file=None,
     icon=icon_file,
+    # onedir build
+    singlefile=True
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
+    a.zipfiles,
     a.datas,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    name='TSA',
-)
-app = BUNDLE(
-    coll,
-    name='TSA.app',
-    icon=icon_file,
-    bundle_identifier=None,
+    name='TSA'
 )

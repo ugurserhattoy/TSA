@@ -17,9 +17,14 @@ It allows efficient filtering by city and organisation, marking applications.
 
 Use below commands to compare output with sha256 files.
 
-### MacOS or Linux
+### MacOS
 ```sh
 shasum -a 256 TSA.dmg
+```
+
+### Linux
+```sh
+shasum -a 256 TSA-Linux.zip
 ```
 
 ### Windows
