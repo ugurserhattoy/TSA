@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install black pylint bandit safety
+          pip install black pylint bandit safety pip-audit
 
       - name: Run Unit Tests
         run: |
@@ -57,7 +57,7 @@ jobs:
       - name: Security check
         run: |
           bandit -r . --exclude ./tests > badges/bandit.txt || true
-          safety --key ${{ secrets.SAFETY_API_KEY }} scan | tee badges/safety.txt
+          pip-audit | tee badges/security.txt
           echo '{"label": "security", "message": "passed", "color": "green"}' > badges/security-check.json
         continue-on-error: true
 
