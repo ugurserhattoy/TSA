@@ -7,7 +7,7 @@ coordinates data filtering, pagination and
 updating the "applied" status via checkboxes.
 
 Key Components:
-- TableManager: Manages the display and structure of the data table
+- TableView: Manages the display and structure of the data table
 - DataManager: Handles database interactions
 - NavigationManager: Manages pagination and result information display
 - MenuManager: Controls menu-related actions and signals
@@ -34,13 +34,13 @@ from PyQt6.QtWidgets import (
     QHeaderView,
 )
 from config import DB_PATH, SETTINGS_PATH
-from ui.table_manager import TableManager
-from ui.data_manager import DataManager
-from ui.navigation_manager import NavigationManager
-from ui.menu_manager import MenuManager
-from ui.logs_viewer import LogsViewer
-from ui.settings_ui import SettingsUI
-from sponsor.settings_manager import SettingsManager
+from views.table_view import TableView
+from controllers.data_controller import DataManager
+from views.navigation_view import NavigationManager
+from views.menu_view import MenuManager
+from views.logs_viewer import LogsViewer
+from views.settings_view import SettingsUI
+from models.settings_model import SettingsManager
 
 
 logger = logging.getLogger()
@@ -65,8 +65,8 @@ class TSAController(QMainWindow):
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
         self.data_manager.conn = self.conn
-        # Initialize TableManager before UI
-        self.table_manager = TableManager()
+        # Initialize TableView before UI
+        self.table_manager = TableView()
 
         # Initialize SettingsManager
         self.settings = SettingsManager(SETTINGS_PATH)

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QTableWidget, QHeaderView, QVBoxLayout
 
 
-class TableManager:
+class TableView:
     """View class responsible for setting up and managing the sponsor table display."""
 
     def __init__(self) -> None:

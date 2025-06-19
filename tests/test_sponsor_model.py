@@ -2,7 +2,7 @@ import os
 import time
 import tempfile
 import pytest
-from sponsor.csv_manager import CSVManager
+from models.sponsor_model import CSVManager
 
 
 @pytest.fixture(name="csv_manager")

@@ -4,7 +4,7 @@ import os
 icon_file = os.path.join('data', 'tsa_icon.icns')
 
 a = Analysis(
-    ['ui/app_main.py'],
+    ['main.py'],
     pathex=['.'],
     binaries=[],
     datas=[],
@@ -23,7 +23,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='TSA',
+    name='TSA.app',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -43,7 +43,7 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='TSA',
+    name='TSA.app',
 )
 app = BUNDLE(
     coll,
