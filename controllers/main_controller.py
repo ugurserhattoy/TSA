@@ -33,14 +33,16 @@ from PyQt6.QtWidgets import (
     QLabel,
     QHeaderView,
 )
-from config import DB_PATH, SETTINGS_PATH
+from config import DB_PATH, SETTINGS_PATH, VERSION
+from models.settings_model import SettingsManager
 from views.table_view import TableView
-from controllers.data_controller import DataManager
 from views.navigation_view import NavigationManager
 from views.menu_view import MenuManager
 from views.logs_viewer import LogsViewer
 from views.settings_view import SettingsUI
-from models.settings_model import SettingsManager
+from views.update_view import UpdateView
+from controllers.data_controller import DataManager
+from utils.update_checker import fetch_latest_release
 
 
 logger = logging.getLogger()
@@ -77,6 +79,10 @@ class TSAController(QMainWindow):
 
         self.initUI()
         self.load_data_page()  # Initial data load after UI setup
+
+        # Release check
+        if self.settings.get_check_for_release():
+            self.check_for_release()
 
     def initUI(self):
         """
@@ -288,23 +294,52 @@ class TSAController(QMainWindow):
         self.logs_viewer = LogsViewer()
         self.logs_viewer.show()
 
+    def check_for_release(self):
+        """
+        Checks for the latest release on GitHub
+        and shows popup to view release notes and download button.
+        """
+        latest = fetch_latest_release()
+        if not latest:
+            # API might not be reachable silenced
+            return
+        latest_version = latest["tag"].lstrip("v")
+        current_version = VERSION.lstrip("v")
+
+        def version_tuple(version):
+            return tuple(map(int, version.split(".")))
+
+        if version_tuple(latest_version) > version_tuple(current_version):
+            changelog = latest.get("changelog", "")
+            asset = latest.get("asset", "")
+            download_url = asset if asset else latest["html_url"]
+
+            UpdateView.show_update_popup(self, latest_version, download_url, changelog)
+
     # Settings
     def show_settings_ui(self):
         """Opens the settings UI window for log preferences."""
         print("[DEBUG] show_settings_ui triggered")
         current_log_level = self.settings.get_log_level()
         rotation_limit = self.settings.get_log_rotation_limit()
+        current_update_check = self.settings.get_check_for_release()
 
-        self.settings_ui = SettingsUI(current_log_level, rotation_limit)
+        self.settings_ui = SettingsUI(
+            current_log_level, rotation_limit, current_update_check
+        )
         self.settings_ui.settings_saved.connect(self.apply_settings)
         self.settings_ui.show()
 
-    def apply_settings(self, log_level: str, rotation_limit: int):
+    def apply_settings(self, log_level: str, rotation_limit: int, update_check: bool):
         """Handles saving settings from the UI."""
         self.settings.set_log_level(log_level)
         self.settings.set_log_rotation_limit(rotation_limit)
+        self.settings.set_check_for_release(update_check)
         logger.info(
-            "Settings updated: level=%s, rotation=%s", log_level, rotation_limit
+            "Settings updated: level=%s, rotation=%s, release_check=%s",
+            log_level,
+            rotation_limit,
+            update_check,
         )
 
     def toggle_applied(self, row_idx, state):

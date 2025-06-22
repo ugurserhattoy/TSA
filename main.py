@@ -1,4 +1,5 @@
 import sys
+
 # import os
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from PyQt6.QtWidgets import QApplication
@@ -8,6 +9,7 @@ from utils.init_logger import init_logger
 from controllers.main_controller import TSAController
 
 # print(sys.path)
+
 
 def main():
     settings_manager = SettingsManager(SETTINGS_PATH)

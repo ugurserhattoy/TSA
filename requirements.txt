@@ -12,6 +12,7 @@ iniconfig==2.1.0
 license-expression==30.4.1
 macholib==1.16.3
 markdown-it-py==3.0.0
+markdown2==2.5.3
 mdurl==0.1.2
 msgpack==1.1.1
 numpy==2.3.0
@@ -37,4 +38,4 @@ soupsieve==2.7
 toml==0.10.2
 typing_extensions==4.14.0
 tzdata==2025.2
-urllib3==2.4.0
+urllib3==2.5.0
