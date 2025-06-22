@@ -7,4 +7,4 @@ tests/test_sponsor_model.py ....
 tests/test_transform_model.py ..✅ SQLite transformation tests passed
 .
 
-============================== 7 passed in 3.15s ===============================
+============================== 7 passed in 2.98s ===============================
