@@ -2,9 +2,9 @@ name: Tests
 
 on:
   workflow_call:
-    secrets:
-      SAFETY_API_KEY:
-        required: true
+    # secrets:
+    #   SAFETY_API_KEY:
+    #     required: true
 
 jobs:
   tests:
@@ -28,43 +28,43 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install black pylint bandit safety pip-audit
+          pip install black pylint bandit pip-audit
 
       - name: Run Unit Tests
         run: |
           mkdir -p badges
           PYTHONPATH=. pytest -s tests | tee badges/unit-tests.txt
-          echo '{"label": "unit", "message": "passed", "color": "green"}' > badges/unit-tests.json
+          echo '{"label": "Unit Tests", "message": "Passed", "color": "green"}' > badges/unit-tests.json
         continue-on-error: true
 
       - name: Record Unit Test Failure
         if: failure()
         run: |
-          echo '{"label": "unit", "message": "failed", "color": "red"}' > badges/unit-tests.json
+          echo '{"label": "Unit Tests", "message": "Failed", "color": "red"}' > badges/unit-tests.json
 
       - name: Code quality check
         run: |
           black --check --diff --color . | tee badges/black.txt || true
           PYTHONPATH=. pylint --fail-under=8.0 $(git ls-files '*.py') | tee badges/pylint.txt
-          echo '{"label": "code", "message": "passed", "color": "green"}' > badges/code-check.json
+          echo '{"label": "Code Quality", "message": "Passed", "color": "green"}' > badges/code-check.json
         continue-on-error: true
 
       - name: Record Code Quality Failure
         if: failure()
         run: |
-          echo '{"label": "code", "message": "failed", "color": "red"}' > badges/code-check.json
+          echo '{"label": "Code Quality", "message": "Failed", "color": "red"}' > badges/code-check.json
 
       - name: Security check
         run: |
           bandit -r . --exclude ./tests > badges/bandit.txt || true
           pip-audit | tee badges/security.txt
-          echo '{"label": "security", "message": "passed", "color": "green"}' > badges/security-check.json
+          echo '{"label": "Security Checks", "message": "Passed", "color": "green"}' > badges/security-check.json
         continue-on-error: true
 
       - name: Record Security Failure
         if: failure()
         run: |
-          echo '{"label": "security", "message": "failed", "color": "red"}' > badges/security-check.json
+          echo '{"label": "Security Checks", "message": "Failed", "color": "red"}' > badges/security-check.json
 
       - name: Upload Badge Data
         uses: actions/upload-artifact@v4

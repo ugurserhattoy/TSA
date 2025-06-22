@@ -1,7 +1,7 @@
 import sqlite3
 import logging
-from sponsor.csv_manager import CSVManager
-from sponsor.transform_db import TransformDB
+from models.sponsor_model import CSVManager
+from models.transform_model import TransformDB
 from config import DB_PATH
 
 

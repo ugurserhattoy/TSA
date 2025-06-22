@@ -2,7 +2,7 @@ import os
 import sqlite3
 import tempfile
 import pytest
-from sponsor.transform_db import TransformDB
+from models.transform_model import TransformDB
 
 
 @pytest.fixture(name="transform_db")

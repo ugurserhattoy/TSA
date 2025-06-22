@@ -20,8 +20,6 @@ permissions:
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml
-    secrets:
-      SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
   
   update-badges:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
@@ -52,7 +50,7 @@ jobs:
       # == Mac ==
       - name: Build app for mac
         if: runner.os == 'macOS'
-        run: pyinstaller tsa_mac.spec
+        run: pyinstaller --noconfirm tsa_mac.spec
       
       - name: Create DMG and SHA256
         if: runner.os == 'macOS'

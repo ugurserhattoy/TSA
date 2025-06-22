@@ -7,14 +7,21 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QMessageBox,
+    QCheckBox,
 )
 from PyQt6.QtCore import pyqtSignal
 
 
 class SettingsUI(QWidget):
-    settings_saved = pyqtSignal(str, int)  # log_level, rotation_limit
+    settings_saved = pyqtSignal(str, int, bool)
 
-    def __init__(self, current_log_level: str, current_rotation_limit: int):
+    # log_level, rotation_limit, update_check
+    def __init__(
+        self,
+        current_log_level: str,
+        current_rotation_limit: int,
+        current_update_check: bool,
+    ):
         super().__init__()
         self.setWindowTitle("Settings")
 
@@ -31,6 +38,10 @@ class SettingsUI(QWidget):
         self.rotation_spin.setRange(1, 20)
         self.rotation_spin.setValue(current_rotation_limit)
 
+        # Update Check
+        self.update_check_box = QCheckBox("Check for updates on startup")
+        self.update_check_box.setChecked(current_update_check)
+
         # Buttons
         self.save_button = QPushButton("Save")
         self.cancel_button = QPushButton("Cancel")
@@ -44,6 +55,7 @@ class SettingsUI(QWidget):
         form_layout.addWidget(self.log_level_combo)
         form_layout.addWidget(self.rotation_label)
         form_layout.addWidget(self.rotation_spin)
+        form_layout.addWidget(self.update_check_box)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.save_button)
@@ -55,7 +67,8 @@ class SettingsUI(QWidget):
     def save_settings(self):
         log_level = self.log_level_combo.currentText()
         rotation_limit = self.rotation_spin.value()
-        self.settings_saved.emit(log_level, rotation_limit)
+        auto_update_check = self.update_check_box.isChecked()
+        self.settings_saved.emit(log_level, rotation_limit, auto_update_check)
         QMessageBox.information(
             self, "Settings Saved", "Settings have been saved successfully."
         )

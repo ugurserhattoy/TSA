@@ -41,6 +41,7 @@ logs/*
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 # *.spec
+tsa_test.spec
 
 # pre-commit
 .pre-commit-config.yaml
@@ -191,3 +192,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Zips
+*.zip

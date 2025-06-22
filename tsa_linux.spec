@@ -26,7 +26,7 @@ icon_file = os.path.join('data', 'tsa_icon.png')
 
 
 a = Analysis(
-    ['ui/app_main.py'],
+    ['main.py'],
     pathex=['.'],
     binaries=[],
     datas=[],
