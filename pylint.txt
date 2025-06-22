@@ -1,4 +1,11 @@
+************* Module TSA.utils.update_checker
+utils/update_checker.py:2:0: C0411: standard import "logging" should be placed before third party import "requests" (wrong-import-order)
+utils/update_checker.py:3:0: C0411: standard import "platform" should be placed before third party import "requests" (wrong-import-order)
+************* Module TSA.views.update_view
+views/update_view.py:20:16: C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
+views/update_view.py:45:53: W0613: Unused argument 'latest_version' (unused-argument)
+views/update_view.py:45:69: W0613: Unused argument 'download_url' (unused-argument)
 
-------------------------------------
-Your code has been rated at 10.00/10
+-----------------------------------
+Your code has been rated at 9.93/10
 

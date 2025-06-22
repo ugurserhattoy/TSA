@@ -1,11 +1,10 @@
 ============================= test session starts ==============================
 platform linux -- Python 3.12.11, pytest-8.4.0, pluggy-1.6.0
 rootdir: /home/runner/work/TSA/TSA
-plugins: anyio-4.9.0
 collected 7 items
 
-tests/test_csv_manager.py ....
-tests/test_transform_db.py ..✅ SQLite transformation tests passed
+tests/test_sponsor_model.py ....
+tests/test_transform_model.py ..✅ SQLite transformation tests passed
 .
 
-============================== 7 passed in 2.33s ===============================
+============================== 7 passed in 3.15s ===============================
