@@ -7,14 +7,13 @@ class TableView:
     def __init__(self) -> None:
         """Initializes the QTableWidget used to display sponsor data."""
         self.table = QTableWidget()
+    
+    def connect_double_click(self, callback):
+        """Allows external code (controller) to react to row double-clicks."""
+        self.table.cellDoubleClicked.connect(callback)
 
-    def setup_table(self, parent_layout: QVBoxLayout) -> None:
-        """
-        Sets up the table with headers, configuration, and adds it to the layout.
-
-        Args:
-            parent_layout (QVBoxLayout): The layout to which the table is added.
-        """
+    def setup_main_table(self) -> None:
+        """Sets up the main table"""
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
             ["Organisation", "City", "County", "Type & Rating", "Route", "Applied"]
@@ -22,7 +21,8 @@ class TableView:
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setAlternatingRowColors(True)
-
+        self.table.setWordWrap(False)
+        
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
 
@@ -39,7 +39,62 @@ class TableView:
         # Allow the table to stretch across the window by assigning stretch factors
         header.setStretchLastSection(False)
 
-        parent_layout.addWidget(self.table)
+    def setup_applications_table(self):
+        """Sets up the applications table"""
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels([
+            "ID", "Organisation", "City", "Role", "Date", "Contact", "Note"
+        ])
+        self.table.setColumnHidden(0, True) # ID hidden
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setAlternatingRowColors(True)
+        self.table.setWordWrap(False)
+
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        # Applications sections width
+        header.setMinimumSectionSize(60)
+        header.resizeSection(0, 180)
+        header.resizeSection(1, 120)
+        header.resizeSection(2, 120)
+        header.resizeSection(3, 120)
+        header.resizeSection(4, 120)
+        header.resizeSection(5, 180)
+        header.setStretchLastSection(False)
+
+    # def setup_table(self, parent_layout: QVBoxLayout) -> None:
+    #     """
+    #     Sets up the table with headers, configuration, and adds it to the layout.
+
+    #     Args:
+    #         parent_layout (QVBoxLayout): The layout to which the table is added.
+    #     """
+    #     self.table.setColumnCount(6)
+    #     self.table.setHorizontalHeaderLabels(
+    #         ["Organisation", "City", "County", "Type & Rating", "Route", "Applied"]
+    #     )
+    #     self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+    #     self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+    #     self.table.setAlternatingRowColors(True)
+
+    #     header = self.table.horizontalHeader()
+    #     header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+
+    #     # Set minimum widths for each column
+    #     self.table.setColumnWidth(0, 200)  # Organisation
+    #     header.setMinimumSectionSize(60)
+    #     header.resizeSection(0, 200)
+    #     header.resizeSection(1, 120)
+    #     header.resizeSection(2, 120)
+    #     header.resizeSection(3, 140)
+    #     header.resizeSection(4, 140)
+    #     header.resizeSection(5, 80)
+
+    #     # Allow the table to stretch across the window by assigning stretch factors
+    #     header.setStretchLastSection(False)
+
+    #     parent_layout.addWidget(self.table)
 
     def adjust_column_widths(self, table_width: int) -> None:
         """

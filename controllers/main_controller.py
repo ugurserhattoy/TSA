@@ -20,21 +20,16 @@ tying together UI initialization and application logic.
 import platform
 import logging
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtGui import QKeySequence, QShortcut, QColor
 from PyQt6.QtWidgets import (
     QMainWindow,
-    QWidget,
-    QVBoxLayout,
     QTableWidgetItem,
-    QLineEdit,
-    QPushButton,
-    QHBoxLayout,
     QCheckBox,
-    QLabel,
     QHeaderView,
 )
 from config import DB_PATH, SETTINGS_PATH, VERSION
 from models.settings_model import SettingsManager
+from views.main_view import MainView
 from views.table_view import TableView
 from views.navigation_view import NavigationManager
 from views.menu_view import MenuManager
@@ -64,11 +59,11 @@ class TSAController(QMainWindow):
         # print("Database path:", DB_PATH)
         logger.info("DB Path: %s", DB_PATH)
         super().__init__()
+        self.setWindowTitle("TSA - Track Sponsored Applications")
+        self.setGeometry(100, 100, 800, 600)
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
         self.data_manager.conn = self.conn
-        # Initialize TableView before UI
-        self.table_manager = TableView()
 
         # Initialize SettingsManager
         self.settings = SettingsManager(SETTINGS_PATH)
@@ -77,52 +72,22 @@ class TSAController(QMainWindow):
         self.settings_ui = None
         self.current_page = 0
 
-        self.initUI()
-        self.load_data_page()  # Initial data load after UI setup
-
-        # Release check
-        if self.settings.get_check_for_release():
-            self.check_for_release()
-
-    def initUI(self):
-        """
-        Builds the main user interface: filter inputs, table display,
-        navigation controls, and menu connections.
-        """
-        self.setWindowTitle("TSA - Track Sponsored Applications")
-        self.setGeometry(100, 100, 800, 600)
-
-        central_widget = QWidget()
-        self.layout = QVBoxLayout()
-        central_widget.setLayout(self.layout)
-        self.setCentralWidget(central_widget)
+        self.view = MainView()
+        self.setCentralWidget(self.view)
 
         self.page_size = 50
 
-        # Filter section
-        self.filter_layout = QHBoxLayout()
-        self.city_input = QLineEdit()
-        self.city_input.setPlaceholderText("Filter by City")
-        self.city_input.returnPressed.connect(self.apply_filter)  # Enter
-        self.org_input = QLineEdit()
-        self.org_input.setPlaceholderText("Filter by Organisation")
-        self.org_input.returnPressed.connect(self.apply_filter)
-        self.filter_button = QPushButton("Apply Filter")
-        self.filter_button.clicked.connect(self.apply_filter)
-
-        self.filter_layout.addWidget(QLabel("City:"))
-        self.filter_layout.addWidget(self.city_input)
-        self.filter_layout.addWidget(QLabel("Organisation:"))
-        self.filter_layout.addWidget(self.org_input)
-        self.filter_layout.addWidget(self.filter_button)
-
-        self.layout.addLayout(self.filter_layout)
+        # Connect filter inputs and button
+        self.view.city_input.returnPressed.connect(self.apply_filter)
+        self.view.org_input.returnPressed.connect(self.apply_filter)
+        self.view.apply_filter_button.clicked.connect(self.apply_filter)
+        self.view.sponsor_table.cellDoubleClicked.connect(self.open_applications_view)
 
         self.configure_table()
 
         # Navigation
         self.navigation_manager = NavigationManager(
-            self.layout,
+            self.view.sponsor_navigation_layout,
             # self.apply_filter,
             self.load_next_page,
             self.load_prev_page,
@@ -138,14 +103,20 @@ class TSAController(QMainWindow):
         platform_name = platform.system()
 
         if platform_name == "Darwin":  # macOS
-            prev_shortcut = QShortcut(QKeySequence("Meta+B"), central_widget)
-            next_shortcut = QShortcut(QKeySequence("Meta+N"), central_widget)
+            prev_shortcut = QShortcut(QKeySequence("Meta+B"), self.view)
+            next_shortcut = QShortcut(QKeySequence("Meta+N"), self.view)
         else:  # Windows or Linux
-            prev_shortcut = QShortcut(QKeySequence("Alt+B"), central_widget)
-            next_shortcut = QShortcut(QKeySequence("Alt+N"), central_widget)
+            prev_shortcut = QShortcut(QKeySequence("Alt+B"), self.view)
+            next_shortcut = QShortcut(QKeySequence("Alt+N"), self.view)
 
         prev_shortcut.activated.connect(self.load_prev_page)
         next_shortcut.activated.connect(self.load_next_page)
+
+        self.load_data_page()  # Initial data load after UI setup
+
+        # Release check
+        if self.settings.get_check_for_release():
+            self.check_for_release()
 
     def build_query(self):
         """
@@ -158,13 +129,13 @@ class TSAController(QMainWindow):
             - count_params (list): parameters for count_query
         """
         base_query = """
-            SELECT organisation_name, town_city, county, type_and_rating, route, applied
+            SELECT organisation_name, town_city, county, type_and_rating, route, Applied
             FROM sponsors
         """
         filters = []
         params = []
 
-        city = self.city_input.text().strip()
+        city = self.view.city_input.text().strip()
         if city:
             if len(city) == 1:
                 filters.append("LOWER(town_city) LIKE ?")
@@ -173,7 +144,7 @@ class TSAController(QMainWindow):
                 filters.append("LOWER(town_city) LIKE ?")
                 params.append(f"%{city.lower()}%")
 
-        org = self.org_input.text().strip()
+        org = self.view.org_input.text().strip()
         if org:
             if len(org) == 1:
                 filters.append("LOWER(organisation_name) LIKE ?")
@@ -201,27 +172,15 @@ class TSAController(QMainWindow):
         Applies styling and layout configuration to the table widget.
         Adjusts headers and section sizes.
         """
-        self.table_manager.table.verticalHeader().setVisible(True)
-        self.table_manager.table.verticalHeader().setDefaultAlignment(
-            Qt.AlignmentFlag.AlignCenter
-        )
-        self.table_manager.table.setWordWrap(False)
-        self.table_manager.table.verticalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Fixed
-        )
-        self.table_manager.table.verticalHeader().setDefaultSectionSize(24)
-        self.table_manager.table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Interactive
-        )
-        self.layout.addWidget(self.table_manager.table)
+        self.view.stacked_widget.setCurrentWidget(self.view.sponsor_widget)
 
     def resizeEvent(self, event):
         """
         Handles window resize events to adjust column widths dynamically.
         """
         super().resizeEvent(event)
-        self.table_manager.adjust_column_widths(
-            self.table_manager.table.viewport().width()
+        self.view.sponsor_table_view.adjust_column_widths(
+            self.view.sponsor_table.viewport().width()
         )
 
     def apply_filter(self):
@@ -246,24 +205,36 @@ class TSAController(QMainWindow):
         cursor.execute(query, params)
         rows = cursor.fetchall()
         # print("ROWS FETCHED:", rows)
-        self.table_manager.table.setRowCount(len(rows))
+        self.view.sponsor_table.setRowCount(len(rows))
 
-        self.table_manager.table.setColumnCount(6)
-        self.table_manager.table.setHorizontalHeaderLabels(
+        self.view.sponsor_table.setColumnCount(6)
+        self.view.sponsor_table.setHorizontalHeaderLabels(
             ["Organisation", "City", "County", "Type & Rating", "Route", "Applied"]
         )
 
         for row_idx, row_data in enumerate(rows):
             for col_idx, value in enumerate(row_data[:-1]):
-                self.table_manager.table.setItem(
-                    row_idx, col_idx, QTableWidgetItem(str(value))
+                item = QTableWidgetItem(str(value))
+                if len(str(value)) > 16:
+                    item.setToolTip(str(value))
+                self.view.sponsor_table.setItem(
+                    row_idx, col_idx, item
                 )
             checkbox = QCheckBox()
             checkbox.setChecked(bool(row_data[-1]))
             checkbox.stateChanged.connect(
                 lambda state, row=row_idx: self.toggle_applied(row + offset, state)
             )
-            self.table_manager.table.setCellWidget(row_idx, 5, checkbox)
+            self.view.sponsor_table.setCellWidget(row_idx, 5, checkbox)
+
+            org = str(row_data[0])
+            city = str(row_data[1])
+            if self.data_manager.has_application(org, city):
+                color = "#2A4520" if row_idx % 2 == 0 else "#49693C"
+                for col in range(self.view.sponsor_table.columnCount()):
+                    item = self.view.sponsor_table.item(row_idx, col)
+                    if item is not None:
+                        item.setBackground(QColor(color))
 
         page_info = f"Page {self.current_page + 1}"
         result_info = f"{total_results} results"
@@ -272,12 +243,12 @@ class TSAController(QMainWindow):
         self.navigation_manager.set_result_info(result_info)
 
         for row_idx in range(len(rows)):
-            item = self.table_manager.table.verticalHeaderItem(row_idx)
+            item = self.view.sponsor_table.verticalHeaderItem(row_idx)
             if item is None:
                 item = QTableWidgetItem()
-                self.table_manager.table.setVerticalHeaderItem(row_idx, item)
+                self.view.sponsor_table.setVerticalHeaderItem(row_idx, item)
             item.setText(str(offset + row_idx + 1))
-        self.table_manager.table.verticalHeader().setSectionResizeMode(
+        self.view.sponsor_table.verticalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
         )
 
@@ -293,6 +264,126 @@ class TSAController(QMainWindow):
     def show_logs_viewer(self):
         self.logs_viewer = LogsViewer()
         self.logs_viewer.show()
+    
+    def open_applications_view(self, row, col):
+        self.current_org_row = row
+        self.current_org_col = col
+        org_item = self.view.sponsor_table.item(row, 0)
+        city_item = self.view.sponsor_table.item(row, 1)
+        if org_item and city_item:
+            self.current_organisation_name = org_item.text()
+            self.current_city = city_item.text()
+            # print(f"Applications for {organisation_name} ({city})")  # !TEST
+            # TableView’s applications table setup func
+            self.view.set_applications_mode(True)
+            self.view.applications_table_view.setup_applications_table()
+            # Run query to parse applications
+            applications = self.data_manager.get_applications(
+                self.current_organisation_name,
+                self.current_city
+            )
+            self.view.applications_table_view.table.setRowCount(len(applications))
+            # app_row = (id, organisation, city, role, date, contact, note)
+            for row_idx, app_row in enumerate(applications):
+                for col_idx, value in enumerate(app_row):
+                    item = QTableWidgetItem(str(value))
+                    self.view.applications_table_view.table.setItem(row_idx, col_idx, item)
+
+            # Set applications widget as current
+            self.view.stacked_widget.setCurrentWidget(self.view.applications_widget)
+
+            # Connect back button
+            try:
+                self.view.back_button.clicked.disconnect()
+                self.view.edit_button.clicked.disconnect()
+                self.view.add_new_button.clicked.disconnect()
+                self.view.delete_button.clicked.disconnect()
+                self.view.applications_table_view.table.cellDoubleClicked.disconnect()
+            except TypeError:
+                pass
+            self.view.back_button.clicked.connect(self.show_sponsor_table)
+            self.view.add_new_button.clicked.connect(self.add_application)
+            self.view.edit_button.clicked.connect(self.edit_application)
+            self.view.delete_button.clicked.connect(self.delete_application)
+            self.view.applications_table_view.table.cellDoubleClicked.connect(self.edit_application)
+
+    def show_sponsor_table(self):
+        """Shows main table screen"""
+        self.view.set_applications_mode(False)
+        self.view.stacked_widget.setCurrentWidget(self.view.sponsor_widget)
+        self.load_data_page()
+    
+    def add_application(self):
+        """
+        Opens a dialog to add a new application for the selected organisation.
+        """
+        org = self.current_organisation_name
+        city = self.current_city
+
+        # ApplicationFormView adlı dialog açılacak
+        from views.application_form_view import ApplicationFormView
+        dialog = ApplicationFormView(org, city)
+        if dialog.exec():
+            data = dialog.get_form_data()
+            self.data_manager.add_application(org, city, **data)
+            self.open_applications_view(self.current_org_row, self.current_org_col)
+
+    def edit_application(self):
+        """Opens a dialog to edit the selected application entry."""
+        selected_row = self.view.applications_table_view.table.currentRow()
+        if selected_row < 0:
+            return  # No Selection No Action
+        table = self.view.applications_table_view.table
+        # if row is None:
+        #     selected_row = table.currentRow()
+        # else:
+        #     selected_row = row
+        def get_cell_text(row, col):
+            item = table.item(row, col)
+            return item.text() if item else ""
+        id = get_cell_text(selected_row, 0)
+        org = get_cell_text(selected_row, 1)
+        city = get_cell_text(selected_row, 2)
+        role = get_cell_text(selected_row, 3)
+        date = get_cell_text(selected_row, 4)
+        contact = get_cell_text(selected_row, 5)
+        note = get_cell_text(selected_row, 6)
+
+        from views.application_form_view import ApplicationFormView
+        dialog = ApplicationFormView(org, city, role, date, contact, note)
+        if dialog.exec():
+            data = dialog.get_form_data()
+            self.data_manager.update_application(id, org, city, **data)
+            self.open_applications_view(self.current_org_row, self.current_org_col)
+
+    def delete_application(self):
+        """
+        Deletes the selected application entry.
+        """
+        table = self.view.applications_table_view.table
+        selected_row = table.currentRow()
+        if selected_row < 0:
+            return  # No Selection No Action
+        id_item = table.item(selected_row, 0)
+        if id_item is None:
+            return  # No ID found, do nothing
+        id = id_item.text()
+        org = table.item(selected_row, 1).text()
+        role = table.item(selected_row, 3).text()
+
+        # Optionally, onay için bir QMessageBox ekleyebilirsin
+        from PyQt6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self,
+            "Delete Application",
+            "Are you sure you want to delete this application?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.data_manager.delete_application(id, org, role)
+            # Table update
+            self.open_applications_view(self.current_org_row, self.current_org_col)
 
     def check_for_release(self):
         """
@@ -354,8 +445,8 @@ class TSAController(QMainWindow):
         # else:
         #     print("[TOGGLE DEBUG] self.conn is VALID")
 
-        org_item = self.table_manager.table.item(row_idx % self.page_size, 0)
-        city_item = self.table_manager.table.item(row_idx % self.page_size, 1)
+        org_item = self.view.sponsor_table.item(row_idx % self.page_size, 0)
+        city_item = self.view.sponsor_table.item(row_idx % self.page_size, 1)
 
         if org_item and city_item:
             organisation_name = org_item.text()
@@ -365,6 +456,7 @@ class TSAController(QMainWindow):
             self.data_manager.toggle_applied(organisation_name, city, current_status)
 
             logger.info(
-                "Updated '%s' to {'applied' if current_status else 'not applied'}",
+                "Updated '%s' to %s",
                 organisation_name,
+                'applied' if current_status else 'not applied',
             )

@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
+from utils.ui_helpers import button_style
 
 
 class NavigationManager:
@@ -30,11 +31,11 @@ class NavigationManager:
         self.result_info_label = QLabel("0 results")
 
         self.previous_button = QPushButton("Previous Page")
-        self.previous_button.setFixedWidth(150)
+        self.previous_button.setStyleSheet(button_style(width=150))
         self.previous_button.clicked.connect(load_previous_callback)
 
         self.next_button = QPushButton("Next Page")
-        self.next_button.setFixedWidth(150)
+        self.next_button.setStyleSheet(button_style(width=150))
         self.next_button.clicked.connect(load_next_callback)
 
         nav_layout = QVBoxLayout()
