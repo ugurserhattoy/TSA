@@ -36,6 +36,7 @@ class MainView(QWidget):
         self.edit_button.setStyleSheet(button_style("lblue"))
         self.add_new_button = QPushButton("Add New")
         self.add_new_button.setStyleSheet(button_style("blue"))
+        # --- United Pieces of Layout ---
         actions_layout.addWidget(self.back_button)
         actions_layout.addWidget(self.edit_button)
         actions_layout.addWidget(self.add_new_button)
@@ -56,14 +57,12 @@ class MainView(QWidget):
         self.sponsor_navigation_widget = QWidget()
         self.sponsor_navigation_widget.setLayout(self.sponsor_navigation_layout)
 
-        # --- Applications Bottom Layout ---
-        self.delete_button = QPushButton("Delete")
-        self.delete_button.setStyleSheet(button_style("red", 150))
-        self.delete_button.hide()  # Hidden
-
         # --- Applications Navigation Layout ---
         self.applications_navigation_layout = QHBoxLayout()
         self.applications_navigation_widget = QWidget()
+        # --- Bottom Layout ---
+        self.delete_button = QPushButton("Delete")
+        self.delete_button.setStyleSheet(button_style("red", 150))
         self.applications_navigation_widget.setLayout(self.applications_navigation_layout)
         self.applications_navigation_layout.addStretch()
         self.applications_navigation_layout.addWidget(self.delete_button)
@@ -100,9 +99,7 @@ class MainView(QWidget):
         if enabled:
             self.filter_panel.hide()
             self.actions_panel.show()
-            self.delete_button.show()
         else:
             self.filter_panel.show()
             self.actions_panel.hide()
-            self.delete_button.hide()
     

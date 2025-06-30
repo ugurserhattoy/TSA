@@ -5,7 +5,7 @@ import os
 
 # DIRs and PATHS
 HOME_DIR = os.path.expanduser("~")
-APP_DIR = os.path.join(HOME_DIR, "TSA")
+APP_DIR = os.path.join(HOME_DIR, ".TSA")
 LOG_DIR = os.path.join(APP_DIR, "logs")
 DATA_DIR = os.path.join(APP_DIR, "data")
 
@@ -30,3 +30,6 @@ LOG_ROTATION_LIMIT = 5
 # Github release api endpoint and version is used for auto check for new releases
 GITHUB_REL = "https://api.github.com/repos/ugurserhattoy/TSA/releases/latest"
 VERSION = "v0.6.0"
+
+#x offset, y offset, width, height
+RES_SETTINGS = [80, 80, 800, 600]

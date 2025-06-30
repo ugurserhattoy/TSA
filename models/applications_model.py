@@ -88,3 +88,12 @@ class ApplicationsModel:
             (org, city),
         )
         return cursor.fetchone()[0] > 0
+    
+    @with_db_connection
+    def get_application_org_city_pairs(self, cursor):
+        """Parse all organisation - city pairs contains applications"""
+        pairs = set()
+        cursor.execute("SELECT organisation_name, city FROM applications")
+        for org, city in cursor.fetchall():
+            pairs.add((org, city))
+        return pairs

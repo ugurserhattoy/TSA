@@ -19,18 +19,17 @@ tying together UI initialization and application logic.
 
 import platform
 import logging
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeySequence, QShortcut, QColor
+# from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence, QShortcut, QColor, QBrush
 from PyQt6.QtWidgets import (
     QMainWindow,
     QTableWidgetItem,
-    QCheckBox,
     QHeaderView,
 )
-from config import DB_PATH, SETTINGS_PATH, VERSION
+from config import DB_PATH, SETTINGS_PATH, VERSION, RES_SETTINGS
 from models.settings_model import SettingsManager
 from views.main_view import MainView
-from views.table_view import TableView
+# from views.table_view import TableView
 from views.navigation_view import NavigationManager
 from views.menu_view import MenuManager
 from views.logs_viewer import LogsViewer
@@ -60,7 +59,7 @@ class TSAController(QMainWindow):
         logger.info("DB Path: %s", DB_PATH)
         super().__init__()
         self.setWindowTitle("TSA - Track Sponsored Applications")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(*RES_SETTINGS)
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
         self.data_manager.conn = self.conn
@@ -111,12 +110,15 @@ class TSAController(QMainWindow):
 
         prev_shortcut.activated.connect(self.load_prev_page)
         next_shortcut.activated.connect(self.load_next_page)
+        # Applications organisation city pair
+        self.application_pairs: set = self.data_manager.get_applications_pairs()
 
         self.load_data_page()  # Initial data load after UI setup
 
         # Release check
         if self.settings.get_check_for_release():
             self.check_for_release()
+        
 
     def build_query(self):
         """
@@ -129,7 +131,7 @@ class TSAController(QMainWindow):
             - count_params (list): parameters for count_query
         """
         base_query = """
-            SELECT organisation_name, town_city, county, type_and_rating, route, Applied
+            SELECT organisation_name, town_city, county, type_and_rating, route
             FROM sponsors
         """
         filters = []
@@ -179,8 +181,17 @@ class TSAController(QMainWindow):
         Handles window resize events to adjust column widths dynamically.
         """
         super().resizeEvent(event)
-        self.view.sponsor_table_view.adjust_column_widths(
+        self.adjust_main_col_widths()
+        self.adjust_applications_col_widths()
+    
+    def adjust_main_col_widths(self):
+        self.view.sponsor_table_view.adjust_main_column_widths(
             self.view.sponsor_table.viewport().width()
+        )
+
+    def adjust_applications_col_widths(self):
+        self.view.applications_table_view.adjust_applications_column_widths(
+            self.view.applications_table.viewport().width()
         )
 
     def apply_filter(self):
@@ -207,34 +218,19 @@ class TSAController(QMainWindow):
         # print("ROWS FETCHED:", rows)
         self.view.sponsor_table.setRowCount(len(rows))
 
-        self.view.sponsor_table.setColumnCount(6)
+        self.view.sponsor_table.setColumnCount(5)
         self.view.sponsor_table.setHorizontalHeaderLabels(
-            ["Organisation", "City", "County", "Type & Rating", "Route", "Applied"]
+            ["Organisation", "City", "County", "Type & Rating", "Route"]
         )
 
         for row_idx, row_data in enumerate(rows):
-            for col_idx, value in enumerate(row_data[:-1]):
+            for col_idx, value in enumerate(row_data):
                 item = QTableWidgetItem(str(value))
                 if len(str(value)) > 16:
                     item.setToolTip(str(value))
-                self.view.sponsor_table.setItem(
-                    row_idx, col_idx, item
-                )
-            checkbox = QCheckBox()
-            checkbox.setChecked(bool(row_data[-1]))
-            checkbox.stateChanged.connect(
-                lambda state, row=row_idx: self.toggle_applied(row + offset, state)
-            )
-            self.view.sponsor_table.setCellWidget(row_idx, 5, checkbox)
+                self.view.sponsor_table.setItem(row_idx, col_idx, item)
 
-            org = str(row_data[0])
-            city = str(row_data[1])
-            if self.data_manager.has_application(org, city):
-                color = "#2A4520" if row_idx % 2 == 0 else "#49693C"
-                for col in range(self.view.sponsor_table.columnCount()):
-                    item = self.view.sponsor_table.item(row_idx, col)
-                    if item is not None:
-                        item.setBackground(QColor(color))
+        self.highlight_applied_rows()
 
         page_info = f"Page {self.current_page + 1}"
         result_info = f"{total_results} results"
@@ -251,6 +247,26 @@ class TSAController(QMainWindow):
         self.view.sponsor_table.verticalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
         )
+
+    def highlight_applied_rows(self):
+        for row_idx in range(self.view.sponsor_table.rowCount()):
+            org_item = self.view.sponsor_table.item(row_idx, 0)
+            city_item = self.view.sponsor_table.item(row_idx, 1)
+            if not org_item or not city_item:
+                continue
+            org = org_item.text()
+            city = city_item.text()
+            if (org, city) in self.application_pairs: # Applied
+                color = "#2A4520" if row_idx % 2 == 0 else "#49693C"
+                for col in range(self.view.sponsor_table.columnCount()):
+                    item = self.view.sponsor_table.item(row_idx, col)
+                    if item:
+                        item.setBackground(QColor(color))
+            else: # Default
+                for col in range(self.view.sponsor_table.columnCount()):
+                    item = self.view.sponsor_table.item(row_idx, col)
+                    if item:
+                        item.setBackground(QBrush())
 
     def load_next_page(self):
         self.current_page += 1
@@ -291,6 +307,7 @@ class TSAController(QMainWindow):
 
             # Set applications widget as current
             self.view.stacked_widget.setCurrentWidget(self.view.applications_widget)
+            self.adjust_applications_col_widths()
 
             # Connect back button
             try:
@@ -301,7 +318,7 @@ class TSAController(QMainWindow):
                 self.view.applications_table_view.table.cellDoubleClicked.disconnect()
             except TypeError:
                 pass
-            self.view.back_button.clicked.connect(self.show_sponsor_table)
+            self.view.back_button.clicked.connect(self.app_back_button_clicked)
             self.view.add_new_button.clicked.connect(self.add_application)
             self.view.edit_button.clicked.connect(self.edit_application)
             self.view.delete_button.clicked.connect(self.delete_application)
@@ -309,9 +326,12 @@ class TSAController(QMainWindow):
 
     def show_sponsor_table(self):
         """Shows main table screen"""
-        self.view.set_applications_mode(False)
-        self.view.stacked_widget.setCurrentWidget(self.view.sponsor_widget)
-        self.load_data_page()
+        self.view.stacked_widget.setCurrentIndex(0)
+        self.highlight_applied_rows()
+
+    def app_back_button_clicked(self):
+        self.show_sponsor_table()
+        self.adjust_main_col_widths()
     
     def add_application(self):
         """
@@ -326,6 +346,7 @@ class TSAController(QMainWindow):
         if dialog.exec():
             data = dialog.get_form_data()
             self.data_manager.add_application(org, city, **data)
+            self.application_pairs.add((org, city))
             self.open_applications_view(self.current_org_row, self.current_org_col)
 
     def edit_application(self):
@@ -369,6 +390,7 @@ class TSAController(QMainWindow):
             return  # No ID found, do nothing
         id = id_item.text()
         org = table.item(selected_row, 1).text()
+        city = table.item(selected_row, 2).text()
         role = table.item(selected_row, 3).text()
 
         # Optionally, onay için bir QMessageBox ekleyebilirsin
@@ -382,6 +404,7 @@ class TSAController(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.Yes:
             self.data_manager.delete_application(id, org, role)
+            self.application_pairs.discard((org, city))
             # Table update
             self.open_applications_view(self.current_org_row, self.current_org_col)
 
@@ -433,30 +456,30 @@ class TSAController(QMainWindow):
             update_check,
         )
 
-    def toggle_applied(self, row_idx, state):
-        """
-        Triggered when a checkbox is toggled.
+    # def toggle_applied(self, row_idx, state):
+    #     """
+    #     Triggered when a checkbox is toggled.
 
-        Updates the 'applied' status of the corresponding sponsor in the database,
-        based on the checkbox state.
-        """
-        # if not self.conn:
-        #     print("[TOGGLE DEBUG] self.conn is None!")
-        # else:
-        #     print("[TOGGLE DEBUG] self.conn is VALID")
+    #     Updates the 'applied' status of the corresponding sponsor in the database,
+    #     based on the checkbox state.
+    #     """
+    #     # if not self.conn:
+    #     #     print("[TOGGLE DEBUG] self.conn is None!")
+    #     # else:
+    #     #     print("[TOGGLE DEBUG] self.conn is VALID")
 
-        org_item = self.view.sponsor_table.item(row_idx % self.page_size, 0)
-        city_item = self.view.sponsor_table.item(row_idx % self.page_size, 1)
+    #     org_item = self.view.sponsor_table.item(row_idx % self.page_size, 0)
+    #     city_item = self.view.sponsor_table.item(row_idx % self.page_size, 1)
 
-        if org_item and city_item:
-            organisation_name = org_item.text()
-            city = city_item.text()
+    #     if org_item and city_item:
+    #         organisation_name = org_item.text()
+    #         city = city_item.text()
 
-            current_status = 1 if state == Qt.CheckState.Checked.value else 0
-            self.data_manager.toggle_applied(organisation_name, city, current_status)
+    #         current_status = 1 if state == Qt.CheckState.Checked.value else 0
+    #         self.data_manager.toggle_applied(organisation_name, city, current_status)
 
-            logger.info(
-                "Updated '%s' to %s",
-                organisation_name,
-                'applied' if current_status else 'not applied',
-            )
+    #         logger.info(
+    #             "Updated '%s' to %s",
+    #             organisation_name,
+    #             'applied' if current_status else 'not applied',
+    #         )
