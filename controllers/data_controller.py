@@ -27,52 +27,24 @@ class DataManager:
 
         self.conn = sqlite3.connect(DB_PATH)
         return self.conn
-    
+
     def get_applications(self, organisation_name, city):
         return self.app_model.get_applications_by_organisation(organisation_name, city)
-    
+
     def add_application(self, org, city, **data):
-        logger.info(
-            "[APPLICATION]: [Added] for %s | %s " % (org, city,))
+        logger.info("[APPLICATION]: [Added] for %s | %s ", org, city,)
         return self.app_model.add_application(org, city, **data)
 
-    def update_application(self, id, org, city, **data):
-        logger.info(
-            "[APPLICATION]: [Updated] for %s | %s " % (org, city,))
-        return self.app_model.update_application(id, **data)
+    def update_application(self, application_id, org, city, **data):
+        logger.info("[APPLICATION]: [Updated] for %s | %s ", org, city)
+        return self.app_model.update_application(application_id, **data)
 
-    def delete_application(self, id, org, role):
-        logger.info("[APPLICATION]: [Deleted] \"%s\" role for \"%s\"" % (role, org))
-        return self.app_model.delete_application(id)
-    
+    def delete_application(self, application_id, org, role):
+        logger.info('[APPLICATION]: [Deleted] "%s" role for "%s"', role, org)
+        return self.app_model.delete_application(application_id)
+
     def has_application(self, org, city):
         return self.app_model.has_application(org, city)
-    
+
     def get_applications_pairs(self):
         return self.app_model.get_application_org_city_pairs()
-
-    # def toggle_applied(self, organisation_name, town_city, new_status):
-    #     if not self.conn:
-    #         logger.warning("[TOGGLE] conn is None")
-    #         return None
-
-    #     logger.debug(
-    #         "[TOGGLE] updating: '%s' | '%s' → %s",
-    #         organisation_name,
-    #         town_city,
-    #         new_status,
-    #     )
-
-    #     cursor = self.conn.cursor()
-    #     cursor.execute(
-    #         """
-    #         UPDATE sponsors
-    #         SET applied = ?
-    #         WHERE LOWER(TRIM(organisation_name)) = LOWER(TRIM(?))
-    #         AND LOWER(TRIM(town_city)) = LOWER(TRIM(?))
-    #         """,
-    #         (new_status, organisation_name, town_city),
-    #     )
-    #     self.conn.commit()
-    #     # logger.info(f"[TOGGLE] Updated rows: {cursor.rowcount}")
-    #     return new_status

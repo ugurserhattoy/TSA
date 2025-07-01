@@ -1,6 +1,6 @@
-import requests
 import logging
 import platform
+import requests
 import markdown2
 from config import GITHUB_REL
 

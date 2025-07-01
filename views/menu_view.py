@@ -5,9 +5,12 @@ including tools, settings, help, and about.
 It also defines signals for handling menu item interactions.
 """
 
-from PyQt6.QtWidgets import QMenuBar, QMenu
+from PyQt6.QtWidgets import (
+    QMenuBar, QMenu, QDialog, QVBoxLayout, QLabel, QTextEdit, QPushButton
+)
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QObject, pyqtSignal
+from utils.menu_utils import read_md_file_to_html
 
 
 class MenuManager(QObject):
@@ -91,7 +94,31 @@ class MenuManager(QObject):
         Creates the About menu with a placeholder action.
         """
         about_menu = QMenu("About", self.parent)
-        placeholder = QAction("Coming soon...", self.parent)
-        placeholder.setEnabled(False)
-        about_menu.addAction(placeholder)
+        about_action = QAction("About This App", self.parent)
+        about_action.setEnabled(False)
+        about_menu.addAction(about_action)
+
+        user_agreement_action = QAction("User Agreement", self.parent)
+        user_agreement_action.triggered.connect(
+            lambda: self.show_md_dialog("data/user_agreement.md", "User Agreement")
+        )
+        about_menu.addAction(user_agreement_action)
         self.menu_bar.addMenu(about_menu)
+
+    def show_md_dialog(self, file_path, title):
+        html = read_md_file_to_html(file_path)
+        dlg = QDialog(self.parent)
+        dlg.setWindowTitle(title)
+        layout = QVBoxLayout()
+        # label = QLabel("<b>User Agreement</b>")
+        # layout.addWidget(label)
+        _text = QTextEdit()
+        _text.setReadOnly(True)
+        _text.setHtml(html)
+        layout.addWidget(_text)
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dlg.accept)
+        layout.addWidget(close_btn)
+        dlg.resize(800, 600)
+        dlg.setLayout(layout)
+        dlg.exec()

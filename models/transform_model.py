@@ -74,9 +74,7 @@ class TransformDB:
             # )
 
             # Build column creation SQL (excluding 'applied')
-            column_names = ", ".join(
-                [f"{col} TEXT" for col in df.columns]
-            )
+            column_names = ", ".join([f"{col} TEXT" for col in df.columns])
             cursor.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS sponsors (
@@ -85,7 +83,7 @@ class TransformDB:
                 )
             """
             )
-                    # applied INTEGER DEFAULT 0
+            # applied INTEGER DEFAULT 0
 
             # Clear old data and insert new
             cursor.execute("DELETE FROM sponsors")

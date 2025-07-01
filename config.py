@@ -31,5 +31,5 @@ LOG_ROTATION_LIMIT = 5
 GITHUB_REL = "https://api.github.com/repos/ugurserhattoy/TSA/releases/latest"
 VERSION = "v0.6.0"
 
-#x offset, y offset, width, height
+# x offset, y offset, width, height
 RES_SETTINGS = [80, 80, 800, 600]

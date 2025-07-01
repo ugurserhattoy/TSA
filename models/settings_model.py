@@ -11,10 +11,10 @@ class SettingsManager:
     Currently supports log rotation limit settings.
     """
 
-    def __init__(self, config_path):
+    def __init__(self, config_path=None):
+        self.logger = logging.getLogger()
         self.config_path = config_path
         self.settings = self.load_settings()
-        self.logger = logging.getLogger()
 
     def load_settings(self):
         """
@@ -26,21 +26,31 @@ class SettingsManager:
                     return json.load(f)
             except (OSError, JSONDecodeError) as err:
                 self.logger.error("❌ JSON file not loaded: %s", err)
-                raise
+                return self.write_defaults
+        return self.write_defaults()
 
+    def write_defaults(self):
         os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
         default_copy = DEFAULT_SETTINGS.copy()
         with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(default_copy, f, indent=4)
         return default_copy
-        # return DEFAULT_SETTINGS.copy()
 
-    def save_settings(self):
+    def save_settings(self, settings=None):
         """
         Save the current settings to the JSON file.
         """
+        if settings is not None:
+            self.settings = settings
         with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(self.settings, f, indent=4)
+
+    def update_setting(self, key, value):
+        self.settings[key] = value
+        self.save_settings()
+
+    def reset_to_defaults(self):
+        self.write_defaults()
 
     def get_check_for_release(self):
         """

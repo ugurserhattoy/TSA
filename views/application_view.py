@@ -1,7 +1,16 @@
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QTextEdit, QPushButton, QDateTimeEdit
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QTextEdit,
+    QPushButton,
+    QDateTimeEdit,
+    QMessageBox,
 )
 from PyQt6.QtCore import QDateTime
+
 
 class ApplicationFormView(QDialog):
     def __init__(self, organisation, city, role="", date=None, contact="", note=""):
@@ -82,5 +91,16 @@ class ApplicationFormView(QDialog):
             "role": self.role_input.text(),
             "date": self.date_input.dateTime().toString("yyyy-MM-dd HH:mm"),
             "contact": self.contact_input.text(),
-            "note": self.note_input.toPlainText()
+            "note": self.note_input.toPlainText(),
         }
+
+
+def confirm_delete(parent=None):
+    reply = QMessageBox.question(
+        parent,
+        "Delete Application",
+        "Are you sure you want to delete this application?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.Yes,
+    )
+    return reply == QMessageBox.StandardButton.Yes
