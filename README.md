@@ -58,4 +58,4 @@ xattr -rd com.apple.quarantine /Applications/TSA.app
 | Delete            | Delete Application       | On Applications Table              |
 
 ## License
-This project is licensed under the MIT License (Non-Commercial Clause). See [LICENSE.md](LICENSE.md) for details.
+This project is licensed under Custom License (Non-Commercial and No-Derivatives Clauses). See [LICENSE.md](LICENSE.md) for details.
