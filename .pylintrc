@@ -11,7 +11,7 @@ disable=
     C0116, # missing-function-docstring
     ; W0611, # unused import
     R0903, # too few public methods
-    ; R0902, # too many instance attributes
+    R0902, # too many instance attributes: main view
 
 [FORMAT]
 max-line-length=100

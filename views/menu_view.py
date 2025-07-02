@@ -5,9 +5,17 @@ including tools, settings, help, and about.
 It also defines signals for handling menu item interactions.
 """
 
-from PyQt6.QtWidgets import QMenuBar, QMenu
+from PyQt6.QtWidgets import (
+    QMenuBar,
+    QMenu,
+    QDialog,
+    QVBoxLayout,
+    QTextEdit,
+    QPushButton,
+)
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QObject, pyqtSignal
+from utils.menu_utils import read_md_file_to_html
 
 
 class MenuManager(QObject):
@@ -25,6 +33,7 @@ class MenuManager(QObject):
     settings_requested = pyqtSignal()
     help_requested = pyqtSignal()
     about_requested = pyqtSignal()
+    check_release_requested = pyqtSignal()
 
     def __init__(self, parent):
         """
@@ -51,47 +60,73 @@ class MenuManager(QObject):
         )
 
     def create_tools_menu(self):
-        """
-        Creates the Tools menu and connects the Logs action to its signal.
-        """
+        """Creates the Tools menu and with actions."""
         tools_menu = QMenu("Tools", self.parent)
         view_logs_action = QAction("Logs", self.parent)
         view_logs_action.triggered.connect(self.logs_requested.emit)
+        check_release_action = QAction("Check New Release", self.parent)
+        check_release_action.triggered.connect(self.check_release_requested.emit)
         tools_menu.addAction(view_logs_action)
+        tools_menu.addAction(check_release_action)
         self.menu_bar.addMenu(tools_menu)
 
     def create_settings_menu(self):
-        """
-        Creates the Settings menu with a placeholder action.
-        """
+        """Creates the Settings menu with actions."""
         settings_menu = QMenu("Settings", self.parent)
         settings_action = QAction("Settings", self.parent)
         settings_action.triggered.connect(self.settings_requested.emit)
         settings_menu.addAction(settings_action)
         self.menu_bar.addMenu(settings_menu)
-        print(
-            "[DEBUG] Added Settings menu:",
-            [action.text() for action in self.menu_bar.actions()],
-        )
-        print("MENU OBJECT:", settings_menu.title(), "| OBJ TYPE:", type(settings_menu))
-        print("[DEBUG] Settings menu created:", settings_menu.title())
+        # print(
+        #     "[DEBUG] Added Settings menu:",
+        #     [action.text() for action in self.menu_bar.actions()],
+        # )
+        # print("MENU OBJECT:", settings_menu.title(), "| OBJ TYPE:", type(settings_menu))
+        # print("[DEBUG] Settings menu created:", settings_menu.title())
 
     def create_help_menu(self):
-        """
-        Creates the Help menu with a placeholder action.
-        """
+        """Creates the Help menu with actions."""
         help_menu = QMenu("Help", self.parent)
-        placeholder = QAction("Coming soon...", self.parent)
-        placeholder.setEnabled(False)
-        help_menu.addAction(placeholder)
+        show_keybinds_action = QAction("Show Keybinds", self.parent)
+        show_keybinds_action.triggered.connect(
+            lambda: self.show_md_dialog("data/keybinds.md", "Keybinds")
+        )
+        help_menu.addAction(show_keybinds_action)
         self.menu_bar.addMenu(help_menu)
 
     def create_about_menu(self):
-        """
-        Creates the About menu with a placeholder action.
-        """
+        """Creates the About menu with actions."""
         about_menu = QMenu("About", self.parent)
-        placeholder = QAction("Coming soon...", self.parent)
-        placeholder.setEnabled(False)
-        about_menu.addAction(placeholder)
+        about_action = QAction("About This App", self.parent)
+        about_action.setEnabled(False)
+        about_menu.addAction(about_action)
+
+        user_agreement_action = QAction("User Agreement", self.parent)
+        user_agreement_action.triggered.connect(
+            lambda: self.show_md_dialog("data/user_agreement.md", "User Agreement")
+        )
+        license_action = QAction("View License", self.parent)
+        license_action.triggered.connect(
+            lambda: self.show_md_dialog("LICENSE.md", "License")
+        )
+        about_menu.addAction(user_agreement_action)
+        about_menu.addAction(license_action)
         self.menu_bar.addMenu(about_menu)
+
+    def show_md_dialog(self, file_path, title):
+        html = read_md_file_to_html(file_path)
+        dlg = QDialog(self.parent)
+        dlg.setWindowTitle(title)
+        layout = QVBoxLayout()
+        # label = QLabel("<b>User Agreement</b>")
+        # layout.addWidget(label)
+        _text = QTextEdit()
+        _text.setReadOnly(True)
+        _text.setHtml(html)
+        layout.addWidget(_text)
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dlg.accept)
+        layout.addWidget(close_btn)
+        dlg.resize(800, 600)
+        dlg.setLayout(layout)
+        dlg.exec()

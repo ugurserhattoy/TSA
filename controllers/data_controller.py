@@ -2,6 +2,7 @@ import sqlite3
 import logging
 from models.sponsor_model import CSVManager
 from models.transform_model import TransformDB
+from models.applications_model import ApplicationsModel
 from config import DB_PATH
 
 
@@ -14,6 +15,7 @@ class DataManager:
         # DATA_DIR = os.path.join(BASE_DIR, "data")
         # self.db_path = os.path.join(DATA_DIR, "sponsorship.db")
         self.conn = None
+        self.app_model = ApplicationsModel()
 
     def prepare_database(self):
         csv_manager = CSVManager()
@@ -26,28 +28,27 @@ class DataManager:
         self.conn = sqlite3.connect(DB_PATH)
         return self.conn
 
-    def toggle_applied(self, organisation_name, town_city, new_status):
-        if not self.conn:
-            logger.warning("[TOGGLE] conn is None")
-            return None
+    def get_applications(self, organisation_name, city):
+        return self.app_model.get_applications_by_organisation(organisation_name, city)
 
-        logger.debug(
-            "[TOGGLE] updating: '%s' | '%s' → %s",
-            organisation_name,
-            town_city,
-            new_status,
+    def add_application(self, org, city, **data):
+        logger.info(
+            "[APPLICATION]: [Added] for %s | %s ",
+            org,
+            city,
         )
+        return self.app_model.add_application(org, city, **data)
 
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            UPDATE sponsors
-            SET applied = ?
-            WHERE LOWER(TRIM(organisation_name)) = LOWER(TRIM(?))
-            AND LOWER(TRIM(town_city)) = LOWER(TRIM(?))
-            """,
-            (new_status, organisation_name, town_city),
-        )
-        self.conn.commit()
-        # logger.info(f"[TOGGLE] Updated rows: {cursor.rowcount}")
-        return new_status
+    def update_application(self, application_id, org, city, **data):
+        logger.info("[APPLICATION]: [Updated] for %s | %s ", org, city)
+        return self.app_model.update_application(application_id, **data)
+
+    def delete_application(self, application_id, org, role):
+        logger.info('[APPLICATION]: [Deleted] "%s" role for "%s"', role, org)
+        return self.app_model.delete_application(application_id)
+
+    def has_application(self, org, city):
+        return self.app_model.has_application(org, city)
+
+    def get_applications_pairs(self):
+        return self.app_model.get_application_org_city_pairs()

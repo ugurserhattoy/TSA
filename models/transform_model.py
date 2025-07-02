@@ -9,7 +9,6 @@ import logging
 import pandas as pd
 from config import CSV_PATH, DB_PATH
 
-# from TSA.sponsor.init_logger import init_logger
 # from sponsor.settings_manager import SettingsManager
 
 
@@ -57,35 +56,33 @@ class TransformDB:
             cursor = conn.cursor()
 
             # Check if table exists and fetch previous applied data
-            cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='sponsors'"
-            )
-            if cursor.fetchone():
-                cursor.execute("SELECT organisation_name, applied FROM sponsors")
-                applied_data = dict(cursor.fetchall())
-            else:
-                applied_data = {}
+            # cursor.execute(
+            #     "SELECT name FROM sqlite_master WHERE type='table' AND name='sponsors'"
+            # )
+            # if cursor.fetchone():
+            #     cursor.execute("SELECT organisation_name, applied FROM sponsors")
+            #     applied_data = dict(cursor.fetchall())
+            # else:
+            #     applied_data = {}
 
             # Add 'applied' column to DataFrame based on existing data
-            if "organisation_name" not in df.columns:
-                raise ValueError("'organisation_name' column is missing from the CSV.")
-            df["applied"] = df["organisation_name"].apply(
-                lambda name: applied_data.get(name, 0)
-            )
+            # if "organisation_name" not in df.columns:
+            #     raise ValueError("'organisation_name' column is missing from the CSV.")
+            # df["applied"] = df["organisation_name"].apply(
+            #     lambda name: applied_data.get(name, 0)
+            # )
 
             # Build column creation SQL (excluding 'applied')
-            column_names = ", ".join(
-                [f"{col} TEXT" for col in df.columns if col != "applied"]
-            )
+            column_names = ", ".join([f"{col} TEXT" for col in df.columns])
             cursor.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS sponsors (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    {column_names},
-                    applied INTEGER DEFAULT 0
+                    {column_names}
                 )
             """
             )
+            # applied INTEGER DEFAULT 0
 
             # Clear old data and insert new
             cursor.execute("DELETE FROM sponsors")

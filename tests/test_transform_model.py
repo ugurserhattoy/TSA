@@ -29,6 +29,19 @@ def make_db_and_conn(transform_db):
         yield df, conn  # Send df and conn as tuple
 
 
+def test_empty_csv_raises(transform_db):
+    empty_path = transform_db.csv_path
+    with open(empty_path, "w", encoding="utf-8") as f:
+        f.write("")  # write nothing
+    try:
+        df = transform_db.clean_and_transform_csv()
+        assert df.empty, "❌ Should return empty DataFrame for empty CSV"
+    except Exception as e:
+        assert "No columns to parse" in str(e) or "EmptyDataError" in str(
+            type(e)
+        ), "❌ Unexpected error for empty CSV"
+
+
 def test_save_as_sqlite(db_and_conn):
     """Test if .csv data is successfully transformed into SQLite"""
     df, conn = db_and_conn
@@ -79,5 +92,12 @@ def test_duplication(db_and_conn, transform_db):
     assert (
         initial_row_count == new_row_count
     ), f"❌ Duplicate entries found! Expected {initial_row_count}, but got {new_row_count}"
+
+
+def test_column_names_and_types(transform_db):
+    df = transform_db.clean_and_transform_csv()
+    expected_columns = ["organisation_name", "city", "county"]
+    for col in expected_columns:
+        assert col in df.columns, f"❌ Column {col} missing in DataFrame"
 
     print("✅ SQLite transformation tests passed")

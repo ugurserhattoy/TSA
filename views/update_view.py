@@ -17,9 +17,8 @@ class UpdateView:
             msg.setIcon(QMessageBox.Icon.Information)
             msg.setWindowTitle("New Version Released!")
             text = (
-                "A new version (v%s) is available!\n\n"
+                f"A new version (v{latest_version}) is available!\n\n"
                 "Would you like to download the latest release or view the release notes?"
-                % (latest_version)
             )
             msg.setText(text)
             # icon_path = os.path.join(os.path.dirname(__file__), "../data/tsa_icon.png")
@@ -35,14 +34,12 @@ class UpdateView:
             if clicked == download_btn:
                 webbrowser.open(download_url)
             elif clicked == changelog_btn:
-                UpdateView.show_changelog_popup(
-                    parent, changelog_html, latest_version, download_url
-                )
+                UpdateView.show_changelog_popup(parent, changelog_html)
             elif clicked == cancel_btn:
                 break
 
     @staticmethod
-    def show_changelog_popup(parent, changelog_html, latest_version, download_url):
+    def show_changelog_popup(parent, changelog_html):
         dlg = QDialog(parent)
         dlg.setWindowTitle("Release Notes")
         layout = QVBoxLayout()
@@ -58,7 +55,3 @@ class UpdateView:
         dlg.resize(800, 600)
         dlg.setLayout(layout)
         dlg.exec()
-        # Close action
-        # UpdateView.show_update_popup(
-        #     parent, latest_version, download_url, changelog_html
-        # )
