@@ -14,8 +14,6 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 from config import CSV_PATH, DATA_DIR
-
-# from TSA.sponsor.init_logger import init_logger
 # from sponsor.settings_manager import SettingsManager
 
 

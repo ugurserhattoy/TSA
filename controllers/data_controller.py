@@ -32,7 +32,11 @@ class DataManager:
         return self.app_model.get_applications_by_organisation(organisation_name, city)
 
     def add_application(self, org, city, **data):
-        logger.info("[APPLICATION]: [Added] for %s | %s ", org, city,)
+        logger.info(
+            "[APPLICATION]: [Added] for %s | %s ",
+            org,
+            city,
+        )
         return self.app_model.add_application(org, city, **data)
 
     def update_application(self, application_id, org, city, **data):

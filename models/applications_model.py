@@ -1,6 +1,7 @@
 import sqlite3
 from config import DB_PATH
 
+
 class ApplicationsModel:
     def __init__(self, db_path=DB_PATH):
         self.db_path = db_path

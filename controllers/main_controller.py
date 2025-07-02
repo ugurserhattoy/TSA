@@ -17,11 +17,9 @@ The TSAController class is the main entry point,
 tying together UI initialization and application logic.
 """
 
-import platform
 import logging
 
-# from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeySequence, QShortcut, QColor, QBrush
+from PyQt6.QtGui import QColor, QBrush
 from PyQt6.QtWidgets import (
     QMainWindow,
     QTableWidgetItem,
@@ -37,6 +35,12 @@ from views.logs_viewer import LogsViewer
 from views.settings_view import SettingsUI
 from views.update_view import UpdateView
 from controllers.data_controller import DataManager
+from controllers.action_handlers import (
+    setup_main_shortcuts,
+    setup_applications_shortcuts,
+    setup_main_enter_action,
+    get_cell_text,
+)
 from utils.update_checker import fetch_latest_release
 
 
@@ -87,6 +91,12 @@ class TSAController(QMainWindow):
         self.view.org_input.returnPressed.connect(self.apply_filter)
         self.view.apply_filter_button.clicked.connect(self.apply_filter)
         self.view.sponsor_table.cellDoubleClicked.connect(self.open_applications_view)
+        setup_main_enter_action(
+            self.view.sponsor_table,
+            self.open_applications_view,
+            self.view.city_input,
+            self.view.org_input,
+        )
 
         self.configure_table()
 
@@ -102,20 +112,17 @@ class TSAController(QMainWindow):
         self.menu_manager = MenuManager(self)
         self.menu_manager.logs_requested.connect(self.show_logs_viewer)
         self.menu_manager.settings_requested.connect(self.show_settings_ui)
+        self.menu_manager.check_release_requested.connect(self.check_for_release)
         # self.menu_manager.help_requested.connect(self.show_help_viewer)
 
-        # Keyboard shortcuts for pagination
-        platform_name = platform.system()
-
-        if platform_name == "Darwin":  # macOS
-            prev_shortcut = QShortcut(QKeySequence("Meta+B"), self.view)
-            next_shortcut = QShortcut(QKeySequence("Meta+N"), self.view)
-        else:  # Windows or Linux
-            prev_shortcut = QShortcut(QKeySequence("Alt+B"), self.view)
-            next_shortcut = QShortcut(QKeySequence("Alt+N"), self.view)
-
-        prev_shortcut.activated.connect(self.load_prev_page)
-        next_shortcut.activated.connect(self.load_next_page)
+        # Keyboard shortcuts
+        setup_main_shortcuts(
+            self.view,
+            self.load_prev_page,
+            self.load_next_page,
+            # self.view.city_input.setFocus,
+            self.view.sponsor_table.setFocus,
+        )
         # Applications organisation city pair
         self.application_pairs: set = self.data_manager.get_applications_pairs()
 
@@ -297,6 +304,14 @@ class TSAController(QMainWindow):
         )
         self.fill_applications_table(applications)
         self.setup_applications_signals()
+        setup_applications_shortcuts(
+            self.view,
+            self.app_back_button_clicked,
+            self.edit_application,
+            self.add_application,
+            self.delete_application,
+        )
+        # setup_enter_action(self.view.applications_table, self.edit_application)
 
     def set_current_organisation(self, row, col):
         org_item = self.view.sponsor_table.item(row, 0)
@@ -344,12 +359,21 @@ class TSAController(QMainWindow):
 
     def show_sponsor_table(self):
         """Shows main table screen"""
+        # self.current_organisation_name = None
+        # self.current_city = None
         self.configure_table()
         self.highlight_applied_rows()
 
     def app_back_button_clicked(self):
         self.show_sponsor_table()
         self.adjust_main_col_widths()
+        setup_main_shortcuts(
+            self.view,
+            self.load_prev_page,
+            self.load_next_page,
+            # self.view.city_input.setFocus,
+            self.view.sponsor_table.setFocus,
+        )
 
     def add_application(self):
         """
@@ -372,17 +396,13 @@ class TSAController(QMainWindow):
             return  # No Selection No Action
         table = self.view.applications_table_view.table
 
-        def get_cell_text(row, col):
-            item = table.item(row, col)
-            return item.text() if item else ""
-
-        application_id = get_cell_text(selected_row, 0)
-        org = get_cell_text(selected_row, 1)
-        city = get_cell_text(selected_row, 2)
-        role = get_cell_text(selected_row, 3)
-        date = get_cell_text(selected_row, 4)
-        contact = get_cell_text(selected_row, 5)
-        note = get_cell_text(selected_row, 6)
+        application_id = get_cell_text(table, selected_row, 0)
+        org = get_cell_text(table, selected_row, 1)
+        city = get_cell_text(table, selected_row, 2)
+        role = get_cell_text(table, selected_row, 3)
+        date = get_cell_text(table, selected_row, 4)
+        contact = get_cell_text(table, selected_row, 5)
+        note = get_cell_text(table, selected_row, 6)
 
         dialog = ApplicationFormView(org, city, role, date, contact, note)
         if dialog.exec():

@@ -8,8 +8,6 @@ import sqlite3
 import logging
 import pandas as pd
 from config import CSV_PATH, DB_PATH
-
-# from TSA.sponsor.init_logger import init_logger
 # from sponsor.settings_manager import SettingsManager
 
 

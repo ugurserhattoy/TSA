@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QTableWidget, QHeaderView
+
 # from config import RES_SETTINGS
 
 
@@ -26,15 +27,14 @@ class TableView:
 
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        # header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
 
         # Set minimum widths for each column
         # self.table.setColumnWidth(0, 200)  # Organisation
-        header.setMinimumSectionSize(60)
+        header.setMinimumSectionSize(80)
 
         # Allow the table to stretch across the window by assigning stretch factors
         header.setStretchLastSection(False)
-        # self.adjust_main_column_widths(self.table.width())
 
     def setup_applications_table(self):
         """Sets up the applications table"""
@@ -71,6 +71,6 @@ class TableView:
         self.table.setColumnWidth(1, int(table_width * 0.15))  # Org
         self.table.setColumnWidth(2, int(table_width * 0.1))  # City
         self.table.setColumnWidth(3, int(table_width * 0.15))  # Role
-        self.table.setColumnWidth(4, min(int(table_width * 0.15), 125))  # Date
+        self.table.setColumnWidth(4, min(int(table_width * 0.15), 132))  # Date
         self.table.setColumnWidth(5, int(table_width * 0.12))  # Contact
         self.table.setColumnWidth(6, int(table_width * 0.25))  # Note

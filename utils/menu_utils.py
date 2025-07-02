@@ -1,6 +1,7 @@
 import markdown2
 
+
 def read_md_file_to_html(path):
-    with open(path, encoding="utf-8") as f:
+    with open(path, "r", encoding="utf-8") as f:
         md_text = f.read()
-    return markdown2.markdown(md_text)
+    return markdown2.markdown(md_text, extras=["tables"])

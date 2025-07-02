@@ -18,7 +18,7 @@ class UpdateView:
             msg.setWindowTitle("New Version Released!")
             text = (
                 f"A new version (v{latest_version}) is available!\n\n"
-                "Would you like to download the latest release or view the release notes?" 
+                "Would you like to download the latest release or view the release notes?"
             )
             msg.setText(text)
             # icon_path = os.path.join(os.path.dirname(__file__), "../data/tsa_icon.png")
@@ -34,9 +34,7 @@ class UpdateView:
             if clicked == download_btn:
                 webbrowser.open(download_url)
             elif clicked == changelog_btn:
-                UpdateView.show_changelog_popup(
-                    parent, changelog_html
-                )
+                UpdateView.show_changelog_popup(parent, changelog_html)
             elif clicked == cancel_btn:
                 break
 

@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Bkps
+*.bkp.py
+
 # C extensions
 *.so
 
@@ -26,12 +29,13 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Ignore all files in data folder
-data/*
+# Ignore files in data folder
+data/*.json
+data/*.db
+data/*.csv
 
 # But keep this placeholder file
-!data/.gitkeep
-!data/tsa_icon.*
+# !data/tsa_icon.*
 
 # Ignore logs
 logs/*

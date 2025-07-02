@@ -52,6 +52,5 @@ def find_asset_url(assets, html_url):
 def markdown_to_html(md_text):
     return markdown2.markdown(md_text)
 
-
 # latest_version = fetch_latest_release()
 # print(latest_version['changelog'])
