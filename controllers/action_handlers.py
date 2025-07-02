@@ -30,7 +30,7 @@ def setup_main_shortcuts(view, prev_cb, next_cb, focus_table_cb):
 
     prev_shortcut.activated.connect(prev_cb)
     next_shortcut.activated.connect(next_cb)
-    focus_city_shortcut.activated.connect(lambda: focus_city_input(view))
+    focus_city_shortcut.activated.connect(lambda: focus_org_input(view))
     focus_table_shortcut.activated.connect(focus_table_cb)
 
     clear_shortcuts()
@@ -73,9 +73,9 @@ def clear_shortcuts():
             shortcut.setParent(None)
 
 
-def focus_city_input(view):
+def focus_org_input(view):
     view.sponsor_table.clearSelection()
-    view.city_input.setFocus()
+    view.org_input.setFocus()
 
 
 def setup_enter_action(table: QTableWidget, open_row_callback):
