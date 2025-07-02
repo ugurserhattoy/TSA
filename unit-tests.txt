@@ -12,4 +12,4 @@ tests/test_sponsor_model.py ...✅ CSV Download tests passed
 tests/test_transform_model.py ....✅ SQLite transformation tests passed
 .
 
-============================== 20 passed in 3.34s ==============================
+============================== 20 passed in 2.48s ==============================
