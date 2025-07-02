@@ -1,11 +1,47 @@
-************* Module TSA.utils.update_checker
-utils/update_checker.py:2:0: C0411: standard import "logging" should be placed before third party import "requests" (wrong-import-order)
-utils/update_checker.py:3:0: C0411: standard import "platform" should be placed before third party import "requests" (wrong-import-order)
+************* Module TSA.controllers.action_handlers
+controllers/action_handlers.py:37:4: W0603: Using the global statement (global-statement)
+controllers/action_handlers.py:59:4: W0603: Using the global statement (global-statement)
+************* Module TSA.controllers.main_controller
+controllers/main_controller.py:50:0: R0904: Too many public methods (29/20) (too-many-public-methods)
+************* Module test_applications_model
+tests/test_applications_model.py:15:10: W0621: Redefining name 'temp_db' from outer scope (line 8) (redefined-outer-name)
+tests/test_applications_model.py:19:33: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
+tests/test_applications_model.py:36:28: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
+tests/test_applications_model.py:54:28: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
+tests/test_applications_model.py:70:25: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
+tests/test_applications_model.py:83:40: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
+tests/test_applications_model.py:95:45: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
+tests/test_applications_model.py:115:11: R1718: Consider using a set comprehension (consider-using-set-comprehension)
+************* Module test_settings_model
+tests/test_settings_model.py:15:21: W0621: Redefining name 'temp_settings_path' from outer scope (line 8) (redefined-outer-name)
+tests/test_settings_model.py:19:26: W0621: Redefining name 'settings_manager' from outer scope (line 15) (redefined-outer-name)
+tests/test_settings_model.py:29:32: W0621: Redefining name 'settings_manager' from outer scope (line 15) (redefined-outer-name)
+tests/test_settings_model.py:41:24: W0621: Redefining name 'settings_manager' from outer scope (line 15) (redefined-outer-name)
+tests/test_settings_model.py:46:8: C0121: Comparison 'loaded['check_for_release'] == False' should be 'loaded['check_for_release'] is False' if checking for the singleton value False, or 'not loaded['check_for_release']' if testing for falsiness (singleton-comparison)
+tests/test_settings_model.py:50:27: W0621: Redefining name 'settings_manager' from outer scope (line 15) (redefined-outer-name)
+tests/test_settings_model.py:59:37: W0621: Redefining name 'temp_settings_path' from outer scope (line 8) (redefined-outer-name)
+************* Module test_sponsor_model
+tests/test_sponsor_model.py:14:16: W0621: Redefining name 'temp_csv_dir' from outer scope (line 8) (redefined-outer-name)
+tests/test_sponsor_model.py:19:38: W0621: Redefining name 'csv_manager' from outer scope (line 14) (redefined-outer-name)
+tests/test_sponsor_model.py:27:39: W0621: Redefining name 'csv_manager' from outer scope (line 14) (redefined-outer-name)
+tests/test_sponsor_model.py:43:42: W0621: Redefining name 'csv_manager' from outer scope (line 14) (redefined-outer-name)
+tests/test_sponsor_model.py:51:35: W0621: Redefining name 'csv_manager' from outer scope (line 14) (redefined-outer-name)
+************* Module test_transform_model
+tests/test_transform_model.py:39:11: W0718: Catching too general exception Exception (broad-exception-caught)
+************* Module TSA.views.application_view
+views/application_view.py:16:4: R0917: Too many positional arguments (7/5) (too-many-positional-arguments)
+views/application_view.py:16:4: R0915: Too many statements (60/50) (too-many-statements)
 ************* Module TSA.views.update_view
-views/update_view.py:20:16: C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
-views/update_view.py:45:53: W0613: Unused argument 'latest_version' (unused-argument)
-views/update_view.py:45:69: W0613: Unused argument 'download_url' (unused-argument)
+views/update_view.py:1:0: R0801: Similar lines in 2 files
+==TSA.views.menu_view:[126:132]
+==TSA.views.update_view:[51:57]
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dlg.accept)
+        layout.addWidget(close_btn)
+        dlg.resize(800, 600)
+        dlg.setLayout(layout)
+        dlg.exec() (duplicate-code)
 
 -----------------------------------
-Your code has been rated at 9.93/10
+Your code has been rated at 9.79/10
 

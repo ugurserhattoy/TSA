@@ -1,10 +1,15 @@
 ============================= test session starts ==============================
 platform linux -- Python 3.12.11, pytest-8.4.0, pluggy-1.6.0
 rootdir: /home/runner/work/TSA/TSA
-collected 7 items
+collected 20 items
 
-tests/test_sponsor_model.py ....
-tests/test_transform_model.py ..✅ SQLite transformation tests passed
+tests/test_applications_model.py .....✅ Applications CRUD tests passed
+.
+tests/test_settings_model.py ....✅ Settings CRUD tests passed
+.
+tests/test_sponsor_model.py ...✅ CSV Download tests passed
+.
+tests/test_transform_model.py ....✅ SQLite transformation tests passed
 .
 
-============================== 7 passed in 2.98s ===============================
+============================== 20 passed in 3.34s ==============================
