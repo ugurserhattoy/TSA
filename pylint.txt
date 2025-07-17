@@ -2,7 +2,7 @@
 controllers/action_handlers.py:37:4: W0603: Using the global statement (global-statement)
 controllers/action_handlers.py:59:4: W0603: Using the global statement (global-statement)
 ************* Module TSA.controllers.main_controller
-controllers/main_controller.py:50:0: R0904: Too many public methods (29/20) (too-many-public-methods)
+controllers/main_controller.py:50:0: R0904: Too many public methods (30/20) (too-many-public-methods)
 ************* Module test_applications_model
 tests/test_applications_model.py:15:10: W0621: Redefining name 'temp_db' from outer scope (line 8) (redefined-outer-name)
 tests/test_applications_model.py:19:33: W0621: Redefining name 'model' from outer scope (line 15) (redefined-outer-name)
@@ -31,9 +31,11 @@ tests/test_transform_model.py:39:11: W0718: Catching too general exception Excep
 ************* Module TSA.views.application_view
 views/application_view.py:16:4: R0917: Too many positional arguments (7/5) (too-many-positional-arguments)
 views/application_view.py:16:4: R0915: Too many statements (60/50) (too-many-statements)
+************* Module TSA.views.menu_view
+views/menu_view.py:146:32: W0212: Access to a protected member _MEIPASS of a client class (protected-access)
 ************* Module TSA.views.update_view
 views/update_view.py:1:0: R0801: Similar lines in 2 files
-==TSA.views.menu_view:[126:132]
+==TSA.views.menu_view:[131:137]
 ==TSA.views.update_view:[51:57]
         close_btn = QPushButton("Close")
         close_btn.clicked.connect(dlg.accept)
@@ -43,5 +45,5 @@ views/update_view.py:1:0: R0801: Similar lines in 2 files
         dlg.exec() (duplicate-code)
 
 -----------------------------------
-Your code has been rated at 9.79/10
+Your code has been rated at 9.80/10
 
