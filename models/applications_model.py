@@ -36,6 +36,39 @@ class ApplicationsModel:
                 (organisation_name, city, role, date, contact, note),
             )
             conn.commit()
+    
+    def get_applications(self, organisation_name=None, city=None):
+        query = "SELECT * FROM applications WHERE 1=1"
+        params = []
+        if organisation_name:
+            query += " AND organisation_name LIKE ?"
+            params.append(f"%{organisation_name}%")
+        if city:
+            query += " AND city LIKE ?"
+            params.append(f"%{city}%")
+        query += " ORDER BY date DESC"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            return cursor.fetchall()
+        # with sqlite3.connect(self.db_path) as conn:
+        #     cursor = conn.cursor()
+        #     query = "SELECT * FROM applications"
+        #     params = []
+
+        #     if organisation_name and city:
+        #         query += " WHERE organisation_name=? AND city=?"
+        #         params.extend([organisation_name, city])
+        #     elif organisation_name:
+        #         query += " WHERE organisation_name=?"
+        #         params.append(organisation_name)
+        #     elif city:
+        #         query += " WHERE city=?"
+        #         params.append(city)
+
+        #     query += " ORDER BY date DESC"
+        #     cursor.execute(query, params)
+        #     return cursor.fetchall()
 
     def get_applications_by_organisation(self, organisation_name, city):
         with sqlite3.connect(self.db_path) as conn:

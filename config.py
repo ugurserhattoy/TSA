@@ -5,7 +5,8 @@ import os
 
 # DIRs and PATHS
 HOME_DIR = os.path.expanduser("~")
-APP_DIR = os.path.join(HOME_DIR, ".TSA")
+# APP_DIR = os.path.join(HOME_DIR, ".TSA")
+APP_DIR = os.path.join(HOME_DIR, "TSA")
 LOG_DIR = os.path.join(APP_DIR, "logs")
 DATA_DIR = os.path.join(APP_DIR, "data")
 

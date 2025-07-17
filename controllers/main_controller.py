@@ -97,6 +97,7 @@ class TSAController(QMainWindow):
             self.view.city_input,
             self.view.org_input,
         )
+        self.view.only_applications.stateChanged.connect(self._only_applications_changed)
 
         self.configure_table()
 
@@ -325,8 +326,9 @@ class TSAController(QMainWindow):
             self.current_organisation_name = None
             self.current_city = None
 
-    def fill_applications_table(self, applications):
-        table = self.view.applications_table_view.table
+    def fill_applications_table(self, applications, name=None):
+        suffix = f"_{name}" if name else ""
+        table = getattr(self.view, f"applications_table{suffix}")
         table.setRowCount(len(applications))
         for row_idx, app_row in enumerate(applications):
             for col_idx, value in enumerate(app_row):
@@ -480,3 +482,25 @@ class TSAController(QMainWindow):
             rotation_limit,
             update_check,
         )
+
+    def _only_applications_changed(self, state):
+        """
+        Handles the state change of the 'Only Applications' checkbox.
+        Filters the table based on whether the checkbox is checked.
+        """
+        if self.view.only_applications.isChecked():
+            org = self.view.org_input.text().strip()
+            city = self.view.city_input.text().strip()
+            results = self.data_manager.get_all_applications(
+                organisation_name=org if org else None,
+                city=city if city else None
+            )
+            # print("Application results: ", results)
+            self.view.applications_table_all_view.setup_applications_table()
+            self.fill_applications_table(results, "all")
+            self.view.show_applications_table(True)
+            self.view.applications_table_all_view.adjust_applications_column_widths(
+                self.view.applications_table_all.viewport().width()
+            )
+        else:
+            self.view.show_applications_table(False)
