@@ -76,6 +76,7 @@ class TSAController(QMainWindow):
         self.logs_viewer = None
         self.settings_ui = None
         self.current_page = 0
+        self.total_page = 0
         self.current_organisation_name = None
         self.current_city = None
         self.current_org_row = None
@@ -96,6 +97,9 @@ class TSAController(QMainWindow):
             self.open_applications_view,
             self.view.city_input,
             self.view.org_input,
+        )
+        self.view.only_applications.stateChanged.connect(
+            self._only_applications_changed
         )
 
         self.configure_table()
@@ -202,18 +206,25 @@ class TSAController(QMainWindow):
         )
 
     def adjust_applications_col_widths(self):
-        self.view.applications_table_view.adjust_applications_column_widths(
-            self.view.applications_table.viewport().width()
-        )
+        if self.view.only_applications.isChecked():
+            self.view.applications_table_all_view.adjust_applications_column_widths(
+                self.view.applications_table_all.viewport().width()
+            )
+        else:
+            self.view.applications_table_view.adjust_applications_column_widths(
+                self.view.applications_table.viewport().width()
+            )
 
     def apply_filter(self):
         self.current_page = 0
-        self.load_data_page()
+        if self.view.only_applications.isChecked():
+            self._only_applications_changed()
+        else:
+            self.load_data_page()
 
     def load_data_page(self):
         """
         Loads sponsor data for the current page and populates the table.
-
         Also highlights applied organisations
         """
         offset = self.current_page * self.page_size
@@ -224,6 +235,7 @@ class TSAController(QMainWindow):
         self.highlight_applied_rows()
         self.set_navigation_info(total_results)
         self.set_vertical_headers(len(rows), offset)
+        self.view.show_applications_table(False)
 
     def get_total_results(self, count_query, count_params):
         count_cursor = self.conn.cursor()
@@ -249,7 +261,8 @@ class TSAController(QMainWindow):
                 self.view.sponsor_table.setItem(row_idx, col_idx, item)
 
     def set_navigation_info(self, total_results):
-        page_info = f"Page {self.current_page + 1}"
+        self.total_page = (total_results + self.page_size - 1) // self.page_size
+        page_info = f"Page {self.current_page + 1}/{self.total_page}"
         result_info = f"{total_results} results"
         logger.debug("Page info: %s, Result info: %s", page_info, result_info)
         self.navigation_manager.set_page_info(page_info)
@@ -284,13 +297,21 @@ class TSAController(QMainWindow):
                         item.setBackground(QBrush())
 
     def load_next_page(self):
+        if self.current_page >= self.total_page - 1:
+            return
         self.current_page += 1
-        self.load_data_page()
+        if self.view.only_applications.isChecked():
+            self.load_applications_page()
+        else:
+            self.load_data_page()
 
     def load_prev_page(self):
         if self.current_page > 0:
             self.current_page -= 1
-            self.load_data_page()
+            if self.view.only_applications.isChecked():
+                self.load_applications_page()
+            else:
+                self.load_data_page()
 
     def show_logs_viewer(self):
         self.logs_viewer = LogsViewer()
@@ -325,8 +346,9 @@ class TSAController(QMainWindow):
             self.current_organisation_name = None
             self.current_city = None
 
-    def fill_applications_table(self, applications):
-        table = self.view.applications_table_view.table
+    def fill_applications_table(self, applications, name=None):
+        suffix = f"_{name}" if name else ""
+        table = getattr(self.view, f"applications_table{suffix}")
         table.setRowCount(len(applications))
         for row_idx, app_row in enumerate(applications):
             for col_idx, value in enumerate(app_row):
@@ -341,16 +363,25 @@ class TSAController(QMainWindow):
             self.view.edit_button.clicked.disconnect()
             self.view.add_new_button.clicked.disconnect()
             self.view.delete_button.clicked.disconnect()
-            self.view.applications_table_view.table.cellDoubleClicked.disconnect()
+            self.view.applications_table.cellDoubleClicked.disconnect()
         except TypeError:
             pass
-        self.view.back_button.clicked.connect(self.app_back_button_clicked)
-        self.view.add_new_button.clicked.connect(self.add_application)
-        self.view.edit_button.clicked.connect(self.edit_application)
-        self.view.delete_button.clicked.connect(self.delete_application)
-        self.view.applications_table_view.table.cellDoubleClicked.connect(
-            self.edit_application
-        )
+        if self.view.only_applications.isChecked():
+            try:
+                self.view.applications_table_all.cellDoubleClicked.disconnect()
+            except TypeError:
+                pass
+            self.view.applications_table_all.cellDoubleClicked.connect(
+                self.edit_application
+            )
+        else:
+            self.view.back_button.clicked.connect(self.app_back_button_clicked)
+            self.view.add_new_button.clicked.connect(self.add_application)
+            self.view.edit_button.clicked.connect(self.edit_application)
+            self.view.delete_button.clicked.connect(self.delete_application)
+            self.view.applications_table.cellDoubleClicked.connect(
+                self.edit_application
+            )
 
     def show_applications_view(self):
         self.view.applications_table_view.setup_applications_table()
@@ -391,10 +422,14 @@ class TSAController(QMainWindow):
 
     def edit_application(self):
         """Opens a dialog to edit the selected application entry."""
-        selected_row = self.view.applications_table_view.table.currentRow()
+        table = (
+            self.view.applications_table_all
+            if self.view.only_applications.isChecked()
+            else self.view.applications_table
+        )
+        selected_row = table.currentRow()
         if selected_row < 0:
             return  # No Selection No Action
-        table = self.view.applications_table_view.table
 
         application_id = get_cell_text(table, selected_row, 0)
         org = get_cell_text(table, selected_row, 1)
@@ -408,7 +443,10 @@ class TSAController(QMainWindow):
         if dialog.exec():
             data = dialog.get_form_data()
             self.data_manager.update_application(application_id, org, city, **data)
-            self.open_applications_view(self.current_org_row, self.current_org_col)
+            if self.view.only_applications.isChecked():
+                self.load_applications_page()
+            else:
+                self.open_applications_view(self.current_org_row, self.current_org_col)
 
     def delete_application(self):
         """
@@ -480,3 +518,38 @@ class TSAController(QMainWindow):
             rotation_limit,
             update_check,
         )
+
+    def load_applications_page(self):
+        """
+        Loads the applications page with the current organisation and city.
+        This is called when the 'Only Applications' checkbox is checked.
+        """
+        offset = self.current_page * self.page_size
+        org = self.view.org_input.text().strip()
+        city = self.view.city_input.text().strip()
+        results, total_count = self.data_manager.get_all_applications(
+            organisation_name=org if org else None,
+            city=city if city else None,
+            limit=self.page_size,
+            offset=offset,
+        )
+        self.view.applications_table_all_view.setup_applications_table()
+        self.set_navigation_info(total_count)
+        self.fill_applications_table(results, "all")
+        self.setup_applications_signals()
+        self.view.show_applications_table(True)
+        self.view.applications_table_all_view.adjust_applications_column_widths(
+            self.view.applications_table_all.viewport().width()
+        )
+
+    def _only_applications_changed(self):
+        """
+        Handles the state change of the 'Only Applications' checkbox.
+        Filters the table based on whether the checkbox is checked.
+        """
+        self.current_page = 0
+        if self.view.only_applications.isChecked():
+            self.load_applications_page()
+        else:
+            self.load_data_page()
+            self.adjust_main_col_widths()

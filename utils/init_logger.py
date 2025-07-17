@@ -16,7 +16,7 @@ from config import LOG_FILE
 def init_logger(log_level="INFO", rotation_limit=5):
     logger = logging.getLogger()
     logger.setLevel(log_level)
-    print(f"LOG_FILE: {LOG_FILE}")
+    # print(f"LOG_FILE: {LOG_FILE}")
     handler = RotatingFileHandler(
         LOG_FILE,
         maxBytes=5 * 1024 * 1024,  # 5 MB filesize limit
@@ -25,7 +25,7 @@ def init_logger(log_level="INFO", rotation_limit=5):
 
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
-    print(f"logger handlers: {logger.handlers}")
+    # print(f"logger handlers: {logger.handlers}")
     # stream_handler = logging.StreamHandler()
     # stream_handler.setFormatter(formatter)
     # logger.addHandler(stream_handler)
@@ -33,7 +33,7 @@ def init_logger(log_level="INFO", rotation_limit=5):
     if not logger.handlers:
         logger.addHandler(handler)
 
-    print(f"logger handlers: {logger.handlers}")
+    logger.debug("handlers: %s", logger.handlers)
 
     # logger.info("Logger initialized ✅")
     # logger.warning("This is a WARNING message")

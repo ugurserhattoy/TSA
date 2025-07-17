@@ -31,6 +31,11 @@ class DataManager:
     def get_applications(self, organisation_name, city):
         return self.app_model.get_applications_by_organisation(organisation_name, city)
 
+    def get_all_applications(
+        self, organisation_name=None, city=None, limit=50, offset=0
+    ):
+        return self.app_model.get_applications(organisation_name, city, limit, offset)
+
     def add_application(self, org, city, **data):
         logger.info(
             "[APPLICATION]: [Added] for %s | %s ",

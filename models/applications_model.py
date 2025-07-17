@@ -37,6 +37,28 @@ class ApplicationsModel:
             )
             conn.commit()
 
+    def get_applications(
+        self, organisation_name=None, city=None, limit: int = 50, offset=0
+    ):
+        base_query = "FROM applications WHERE 1=1"
+        params = []
+        if organisation_name:
+            base_query += " AND organisation_name LIKE ?"
+            params.append(f"%{organisation_name}%")
+        if city:
+            base_query += " AND city LIKE ?"
+            params.append(f"%{city}%")
+
+        count_query = "SELECT COUNT(*) " + base_query
+        data_query = "SELECT * " + base_query + " ORDER BY date DESC LIMIT ? OFFSET ?"
+        data_params = params + [limit, offset]
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            count = cursor.execute(count_query, params).fetchone()[0]
+            cursor.execute(data_query, data_params)
+            return cursor.fetchall(), count
+
     def get_applications_by_organisation(self, organisation_name, city):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
