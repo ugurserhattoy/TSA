@@ -8,7 +8,11 @@ a = Analysis(
     ['main.py'],
     pathex=['.'],
     binaries=[],
-    datas=[],
+    datas=[
+        ('data/user_agreement.md', 'data'),
+        ('LICENSE.md', '.'),
+        ('data/keybinds.md', 'data')
+    ],
     hiddenimports=[],
     hookspath=[],
     runtime_hooks=[],

@@ -5,6 +5,8 @@ including tools, settings, help, and about.
 It also defines signals for handling menu item interactions.
 """
 
+import sys
+import os
 from PyQt6.QtWidgets import (
     QMenuBar,
     QMenu,
@@ -16,6 +18,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QObject, pyqtSignal
 from utils.menu_utils import read_md_file_to_html
+from utils.init_logger import init_logger
+
+
+logger = init_logger()
 
 
 class MenuManager(QObject):
@@ -114,19 +120,44 @@ class MenuManager(QObject):
         self.menu_bar.addMenu(about_menu)
 
     def show_md_dialog(self, file_path, title):
-        html = read_md_file_to_html(file_path)
-        dlg = QDialog(self.parent)
-        dlg.setWindowTitle(title)
-        layout = QVBoxLayout()
-        # label = QLabel("<b>User Agreement</b>")
-        # layout.addWidget(label)
-        _text = QTextEdit()
-        _text.setReadOnly(True)
-        _text.setHtml(html)
-        layout.addWidget(_text)
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(dlg.accept)
-        layout.addWidget(close_btn)
-        dlg.resize(800, 600)
-        dlg.setLayout(layout)
-        dlg.exec()
+        try:
+            html = read_md_file_to_html(self.resource_path(file_path))
+            dlg = QDialog(self.parent)
+            dlg.setWindowTitle(title)
+            layout = QVBoxLayout()
+            _text = QTextEdit()
+            _text.setReadOnly(True)
+            _text.setHtml(html)
+            layout.addWidget(_text)
+            close_btn = QPushButton("Close")
+            close_btn.clicked.connect(dlg.accept)
+            layout.addWidget(close_btn)
+            dlg.resize(800, 600)
+            dlg.setLayout(layout)
+            dlg.exec()
+        except Exception as e:
+            logger.error(f"❌ [Error] Menu View/show_md_dialog: {e}")
+        # html = read_md_file_to_html(self.resource_path(file_path))
+        # dlg = QDialog(self.parent)
+        # dlg.setWindowTitle(title)
+        # layout = QVBoxLayout()
+        # # label = QLabel("<b>User Agreement</b>")
+        # # layout.addWidget(label)
+        # _text = QTextEdit()
+        # _text.setReadOnly(True)
+        # _text.setHtml(html)
+        # layout.addWidget(_text)
+        # close_btn = QPushButton("Close")
+        # close_btn.clicked.connect(dlg.accept)
+        # layout.addWidget(close_btn)
+        # dlg.resize(800, 600)
+        # dlg.setLayout(layout)
+        # dlg.exec()
+
+    @staticmethod
+    def resource_path(relative_path):
+        """Get absolute path to resource, works for dev and for PyInstaller bundle"""
+        if hasattr(sys, "_MEIPASS"):
+            # PyInstaller unpacked directory
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)

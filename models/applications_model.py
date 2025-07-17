@@ -36,8 +36,10 @@ class ApplicationsModel:
                 (organisation_name, city, role, date, contact, note),
             )
             conn.commit()
-    
-    def get_applications(self, organisation_name=None, city=None):
+
+    def get_applications(
+        self, organisation_name=None, city=None, limit: int = 50, offset=0
+    ):
         query = "SELECT * FROM applications WHERE 1=1"
         params = []
         if organisation_name:
@@ -46,29 +48,15 @@ class ApplicationsModel:
         if city:
             query += " AND city LIKE ?"
             params.append(f"%{city}%")
+        count_query = f"SELECT COUNT(*) FROM ({query})"
         query += " ORDER BY date DESC"
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
+            count = cursor.execute(count_query, params[:-2]).fetchone()[0]
             cursor.execute(query, params)
-            return cursor.fetchall()
-        # with sqlite3.connect(self.db_path) as conn:
-        #     cursor = conn.cursor()
-        #     query = "SELECT * FROM applications"
-        #     params = []
-
-        #     if organisation_name and city:
-        #         query += " WHERE organisation_name=? AND city=?"
-        #         params.extend([organisation_name, city])
-        #     elif organisation_name:
-        #         query += " WHERE organisation_name=?"
-        #         params.append(organisation_name)
-        #     elif city:
-        #         query += " WHERE city=?"
-        #         params.append(city)
-
-        #     query += " ORDER BY date DESC"
-        #     cursor.execute(query, params)
-        #     return cursor.fetchall()
+            return cursor.fetchall(), count
 
     def get_applications_by_organisation(self, organisation_name, city):
         with sqlite3.connect(self.db_path) as conn:

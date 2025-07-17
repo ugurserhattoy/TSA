@@ -82,6 +82,7 @@ class MainView(QWidget):
         self.city_input = QLineEdit()
         self.city_input.setPlaceholderText("Filter by City")
         self.only_applications = QCheckBox("Applications")
+        self.only_applications.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.apply_filter_button = QPushButton("Apply Filter")
         self.apply_filter_button.setStyleSheet(button_style("blue"))
         filter_layout.addWidget(QLabel("Organisation:"))
@@ -112,10 +113,10 @@ class MainView(QWidget):
         self.sponsor_table = self.sponsor_table_view.table
         self.sponsor_table.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-    def table_applications(self, name = None):
+    def table_applications(self, name=None):
         suffix = f"_{name}" if name else ""
         setattr(self, f"applications_table{suffix}_view", TableView())
-        applications_table_view:TableView = getattr(
+        applications_table_view: TableView = getattr(
             self, f"applications_table{suffix}_view"
         )
         setattr(self, f"applications_table{suffix}", applications_table_view.table)
