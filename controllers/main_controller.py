@@ -209,7 +209,10 @@ class TSAController(QMainWindow):
 
     def apply_filter(self):
         self.current_page = 0
-        self.load_data_page()
+        if self.view.only_applications.isChecked():
+            self._only_applications_changed(True)
+        else:
+            self.load_data_page()
 
     def load_data_page(self):
         """
