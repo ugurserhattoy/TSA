@@ -40,22 +40,23 @@ class ApplicationsModel:
     def get_applications(
         self, organisation_name=None, city=None, limit: int = 50, offset=0
     ):
-        query = "SELECT * FROM applications WHERE 1=1"
+        base_query = "FROM applications WHERE 1=1"
         params = []
         if organisation_name:
-            query += " AND organisation_name LIKE ?"
+            base_query += " AND organisation_name LIKE ?"
             params.append(f"%{organisation_name}%")
         if city:
-            query += " AND city LIKE ?"
+            base_query += " AND city LIKE ?"
             params.append(f"%{city}%")
-        count_query = f"SELECT COUNT(*) FROM ({query})"
-        query += " ORDER BY date DESC"
-        query += " LIMIT ? OFFSET ?"
-        params.extend([limit, offset])
+
+        count_query = "SELECT COUNT(*) " + base_query
+        data_query = "SELECT * " + base_query + " ORDER BY date DESC LIMIT ? OFFSET ?"
+        data_params = params + [limit, offset]
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            count = cursor.execute(count_query, params[:-2]).fetchone()[0]
-            cursor.execute(query, params)
+            count = cursor.execute(count_query, params).fetchone()[0]
+            cursor.execute(data_query, data_params)
             return cursor.fetchall(), count
 
     def get_applications_by_organisation(self, organisation_name, city):

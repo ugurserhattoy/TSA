@@ -206,14 +206,19 @@ class TSAController(QMainWindow):
         )
 
     def adjust_applications_col_widths(self):
-        self.view.applications_table_view.adjust_applications_column_widths(
-            self.view.applications_table.viewport().width()
-        )
+        if self.view.only_applications.isChecked():
+            self.view.applications_table_all_view.adjust_applications_column_widths(
+                self.view.applications_table_all.viewport().width()
+            )
+        else:
+            self.view.applications_table_view.adjust_applications_column_widths(
+                self.view.applications_table.viewport().width()
+            )
 
     def apply_filter(self):
         self.current_page = 0
         if self.view.only_applications.isChecked():
-            self._only_applications_changed(True)
+            self._only_applications_changed()
         else:
             self.load_data_page()
 
@@ -537,7 +542,7 @@ class TSAController(QMainWindow):
             self.view.applications_table_all.viewport().width()
         )
 
-    def _only_applications_changed(self, state):
+    def _only_applications_changed(self):
         """
         Handles the state change of the 'Only Applications' checkbox.
         Filters the table based on whether the checkbox is checked.
@@ -547,3 +552,4 @@ class TSAController(QMainWindow):
             self.load_applications_page()
         else:
             self.load_data_page()
+            self.adjust_main_col_widths()

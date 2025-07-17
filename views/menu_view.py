@@ -135,24 +135,8 @@ class MenuManager(QObject):
             dlg.resize(800, 600)
             dlg.setLayout(layout)
             dlg.exec()
-        except Exception as e:
-            logger.error(f"❌ [Error] Menu View/show_md_dialog: {e}")
-        # html = read_md_file_to_html(self.resource_path(file_path))
-        # dlg = QDialog(self.parent)
-        # dlg.setWindowTitle(title)
-        # layout = QVBoxLayout()
-        # # label = QLabel("<b>User Agreement</b>")
-        # # layout.addWidget(label)
-        # _text = QTextEdit()
-        # _text.setReadOnly(True)
-        # _text.setHtml(html)
-        # layout.addWidget(_text)
-        # close_btn = QPushButton("Close")
-        # close_btn.clicked.connect(dlg.accept)
-        # layout.addWidget(close_btn)
-        # dlg.resize(800, 600)
-        # dlg.setLayout(layout)
-        # dlg.exec()
+        except (FileNotFoundError, OSError, UnicodeDecodeError) as FileError:
+            logger.error("❌ [Error] Menu View/show_md_dialog: %s", FileError)
 
     @staticmethod
     def resource_path(relative_path):
