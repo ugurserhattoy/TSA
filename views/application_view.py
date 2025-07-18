@@ -8,8 +8,50 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QDateTimeEdit,
     QMessageBox,
+    QWidget
 )
 from PyQt6.QtCore import QDateTime, QEvent, Qt
+from views.table_view import TableView
+from utils.ui_helpers import button_style
+
+
+class ApplicationView(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Actions panel
+        self.actions_panel = QWidget()
+        actions_layout = QHBoxLayout()
+        self.back_button = QPushButton("Back")
+        self.back_button.setStyleSheet(button_style())
+        self.edit_button = QPushButton("Edit")
+        self.edit_button.setStyleSheet(button_style("lblue"))
+        self.add_new_button = QPushButton("Add New")
+        self.add_new_button.setStyleSheet(button_style("blue"))
+        actions_layout.addWidget(self.back_button)
+        actions_layout.addWidget(self.edit_button)
+        actions_layout.addWidget(self.add_new_button)
+        self.actions_panel.setLayout(actions_layout)
+
+        # Table
+        self.applications_table_view = TableView()
+        self.applications_table = self.applications_table_view.table
+
+        # Bottom panel
+        self.bottom_widget = QWidget()
+        self.delete_button = QPushButton("Delete")
+        self.delete_button.setStyleSheet(button_style("red", 150))
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(self.delete_button)
+        bottom_layout.addStretch()
+        self.bottom_widget.setLayout(bottom_layout)
+
+        # Main layout
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.actions_panel)
+        main_layout.addWidget(self.applications_table)
+        main_layout.addWidget(self.bottom_widget)
+        self.setLayout(main_layout)
 
 
 class ApplicationFormView(QDialog):
