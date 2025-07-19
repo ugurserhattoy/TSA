@@ -143,7 +143,7 @@ class TSAController(QMainWindow):
 
         # Release check
         if self.settings.get_check_for_release():
-            self.check_for_release()
+            self.check_for_release(False)
 
     def build_query(self):
         """
@@ -408,7 +408,7 @@ class TSAController(QMainWindow):
             self.view.sponsor_table.setFocus,
         )
 
-    def check_for_release(self):
+    def check_for_release(self, show_popup=True):
         """
         Checks for the latest release on GitHub
         and shows popup to view release notes and download button.
@@ -429,6 +429,18 @@ class TSAController(QMainWindow):
             download_url = asset if asset else latest["html_url"]
 
             UpdateView.show_update_popup(self, latest_version, download_url, changelog)
+        else:
+            logger.info(
+                "No new release available. Current version: %s",
+                current_version
+            )
+            if show_popup:
+                UpdateView.show_changelog_popup(
+                    self,
+                    f"<h3>Already up to date!</h3><br>Version: <b>{VERSION}</b>",
+                    "Check for New Release",
+                    (320, 240)
+                )
 
     # Settings
     def show_settings_ui(self):
