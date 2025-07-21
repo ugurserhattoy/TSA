@@ -5,13 +5,10 @@ from PyQt6.QtWidgets import (
 from views.application_view import ApplicationFormView, confirm_delete
 from controllers.action_handlers import get_cell_text
 
+
 class ApplicationController(QObject):
     def __init__(
-            self,
-            data_manager,
-            main_view,
-            application_pairs,
-            open_applications_view_cb
+        self, data_manager, main_view, application_pairs, open_applications_view_cb
     ):
         super().__init__()
         self.data_manager = data_manager
@@ -25,9 +22,7 @@ class ApplicationController(QObject):
         if name == "all":
             table = getattr(self.main_view, f"applications_table{suffix}")
         else:
-            table = getattr(
-                self.av, f"applications_table{suffix}"
-            )
+            table = getattr(self.av, f"applications_table{suffix}")
         table.setRowCount(len(applications))
         for row_idx, app_row in enumerate(applications):
             for col_idx, value in enumerate(app_row):
@@ -37,12 +32,12 @@ class ApplicationController(QObject):
                 table.setItem(row_idx, col_idx, item)
 
     def setup_applications_signals(
-            self,
-            only_applications_checked,
-            app_back_button_cb,
-            edit_application_cb,
-            add_application_cb,
-            delete_application_cb,
+        self,
+        only_applications_checked,
+        app_back_button_cb,
+        edit_application_cb,
+        add_application_cb,
+        delete_application_cb,
     ):
         view = self.main_view
         # Disconnect previous connections to avoid duplicate calls
@@ -68,11 +63,11 @@ class ApplicationController(QObject):
             self.av.applications_table.cellDoubleClicked.connect(edit_application_cb)
 
     def add_application(
-            self,
-            org,
-            city,
-            current_org_row,
-            current_org_col,
+        self,
+        org,
+        city,
+        current_org_row,
+        current_org_col,
     ):
         dialog = ApplicationFormView(org, city)
         if dialog.exec():
@@ -82,11 +77,11 @@ class ApplicationController(QObject):
             self.open_applications_view_cb(current_org_row, current_org_col)
 
     def edit_application(
-            self,
-            only_applications_checked,
-            current_org_row,
-            current_org_col,
-            load_applications_page_cb
+        self,
+        only_applications_checked,
+        current_org_row,
+        current_org_col,
+        load_applications_page_cb,
     ):
         view = self.main_view
         table = (
@@ -115,9 +110,9 @@ class ApplicationController(QObject):
                 self.open_applications_view_cb(current_org_row, current_org_col)
 
     def delete_application(
-            self,
-            current_org_row,
-            current_org_col,
+        self,
+        current_org_row,
+        current_org_col,
     ):
         table = self.av.applications_table_view.table
         selected_row = table.currentRow()
@@ -131,7 +126,7 @@ class ApplicationController(QObject):
         city = table.item(selected_row, 2).text()
         role = table.item(selected_row, 3).text()
 
-        if confirm_delete(self.main_view):
+        if confirm_delete(self.main_view, org, role):
             self.data_manager.delete_application(application_id, org, role)
             if not self.data_manager.get_applications(org, city):
                 self.application_pairs.discard((org, city))
@@ -144,10 +139,11 @@ class ApplicationController(QObject):
             self.av.applications_table.viewport().width()
         )
 
+
 # Note: The following method is commented out because it is not used in the current code
 # It was originally intended to create a QTableWidgetItem, but it is not necessary
 # since we can directly use QTableWidgetItem from PyQt6.QtWidgets.
 # Uncomment if needed in the future.
-    # def _create_table_item(self, value):
-    #     from PyQt6.QtWidgets import QTableWidgetItem
-    #     return QTableWidgetItem(value)
+# def _create_table_item(self, value):
+#     from PyQt6.QtWidgets import QTableWidgetItem
+#     return QTableWidgetItem(value)

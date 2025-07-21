@@ -1,4 +1,6 @@
-import webbrowser, re
+import webbrowser
+import re
+
 
 class JobBoardController:
     def __init__(self, application_view):
@@ -14,19 +16,13 @@ class JobBoardController:
         except TypeError:
             pass
         self.view.linkedin_btn.clicked.connect(
-            lambda: self.open_linkedin(
-                org if org else self.get_current_organisation()
-            )
+            lambda: self.open_linkedin(org if org else self.get_current_organisation())
         )
         self.view.indeed_btn.clicked.connect(
-            lambda: self.open_indeed(
-                org if org else self.get_current_organisation()
-            )
+            lambda: self.open_indeed(org if org else self.get_current_organisation())
         )
         self.view.glassdoor_btn.clicked.connect(
-            lambda: self.open_glassdoor(
-                org if org else self.get_current_organisation()
-            )
+            lambda: self.open_glassdoor(org if org else self.get_current_organisation())
         )
         self.view.google_btn.clicked.connect(
             lambda: self.open_google_jobs(
@@ -41,7 +37,9 @@ class JobBoardController:
             return None
         # Organisation name is assumed to be in the first column
         org_item = table.item(row, 1)
-        print("Opening LinkedIn for organisation:", org_item.text() if org_item else None)
+        print(
+            "Opening LinkedIn for organisation:", org_item.text() if org_item else None
+        )
         return org_item.text() if org_item else None
 
     def open_linkedin(self, org=None):
@@ -88,11 +86,14 @@ class JobBoardController:
             r"\bcorp\b",
             r"\bllc\b",
             r"\bco\b",
-            r"\bsarl\b", r"\bgmbh\b", r"\bgroup\b", r"\bservices\b"
+            r"\bsarl\b",
+            r"\bgmbh\b",
+            r"\bgroup\b",
+            r"\bservices\b",
         ]
         name = org_name.lower()
         name = re.sub(r"[^a-zA-Z0-9\s]", "", name)  # remove special characters
-        name = re.sub(r"\s+", " ", name).strip()    # remove extra spaces
+        name = re.sub(r"\s+", " ", name).strip()  # remove extra spaces
         for suffix in remove_suffixes:
             name = re.sub(suffix, "", name)
         words = name.split()

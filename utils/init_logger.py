@@ -26,6 +26,7 @@ def init_logger(log_level="INFO", rotation_limit=5):
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     # print(f"logger handlers: {logger.handlers}")
+    # Uncomment the following lines to add a stream handler for console output
     # stream_handler = logging.StreamHandler()
     # stream_handler.setFormatter(formatter)
     # logger.addHandler(stream_handler)

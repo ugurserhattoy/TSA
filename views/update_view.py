@@ -21,7 +21,6 @@ class UpdateView:
                 "Would you like to download the latest release or view the release notes?"
             )
             msg.setText(text)
-            # icon_path = os.path.join(os.path.dirname(__file__), "../data/tsa_icon.png")
             download_btn = msg.addButton("Download", QMessageBox.ButtonRole.YesRole)
             changelog_btn = msg.addButton(
                 "View Changelog", QMessageBox.ButtonRole.ActionRole
@@ -39,7 +38,9 @@ class UpdateView:
                 break
 
     @staticmethod
-    def show_changelog_popup(parent, changelog_html, title="Release Notes", resize=(800, 600)):
+    def show_changelog_popup(
+        parent, changelog_html, title="Release Notes", resize=(800, 600)
+    ):
         dlg = QDialog(parent)
         dlg.setWindowTitle(title)
         layout = QVBoxLayout()

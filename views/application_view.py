@@ -1,3 +1,5 @@
+import os
+import sys
 from PyQt6.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -49,25 +51,29 @@ class ApplicationView(QWidget):
 
         # Job board buttons
         self.linkedin_btn = QPushButton()
-        self.linkedin_btn.setIcon(QIcon("assets/lin.png"))
+        linkedin_path = self.resource_path("assets/lin.png")
+        self.linkedin_btn.setIcon(QIcon(linkedin_path))
         self.linkedin_btn.setToolTip("LinkedIn")
         self.linkedin_btn.setFixedSize(36, 36)
         self.linkedin_btn.setStyleSheet(button_style("white"))
 
         self.indeed_btn = QPushButton()
-        self.indeed_btn.setIcon(QIcon("assets/ind.png"))
+        indeed_path = self.resource_path("assets/ind.png")
+        self.indeed_btn.setIcon(QIcon(indeed_path))
         self.indeed_btn.setToolTip("Indeed")
         self.indeed_btn.setFixedSize(36, 36)
         self.indeed_btn.setStyleSheet(button_style("white"))
 
         self.glassdoor_btn = QPushButton()
-        self.glassdoor_btn.setIcon(QIcon("assets/glass.png"))
+        glass_path = self.resource_path("assets/glass.png")
+        self.glassdoor_btn.setIcon(QIcon(glass_path))
         self.glassdoor_btn.setToolTip("Glassdoor")
         self.glassdoor_btn.setFixedSize(36, 36)
         self.glassdoor_btn.setStyleSheet(button_style("white"))
 
         self.google_btn = QPushButton()
-        self.google_btn.setIcon(QIcon("assets/g.png"))
+        g_path = self.resource_path("assets/g.png")
+        self.google_btn.setIcon(QIcon(g_path))
         self.google_btn.setToolTip("Google")
         self.google_btn.setFixedSize(36, 36)
         self.google_btn.setStyleSheet(button_style("white"))
@@ -87,14 +93,10 @@ class ApplicationView(QWidget):
         filler_widget.setLayout(filler_layout)
 
         bottom_layout.addWidget(
-            job_board_widget,
-            alignment=Qt.AlignmentFlag.AlignLeft,
-            stretch=1
+            job_board_widget, alignment=Qt.AlignmentFlag.AlignLeft, stretch=1
         )
         bottom_layout.addWidget(
-            delete_button_widget,
-            alignment=Qt.AlignmentFlag.AlignCenter,
-            stretch=1
+            delete_button_widget, alignment=Qt.AlignmentFlag.AlignCenter, stretch=1
         )
         # bottom_layout.addStretch()
         bottom_layout.addWidget(filler_widget, stretch=1)
@@ -106,6 +108,12 @@ class ApplicationView(QWidget):
         main_layout.addWidget(self.applications_table)
         main_layout.addWidget(bottom_widget)
         self.setLayout(main_layout)
+
+    @staticmethod
+    def resource_path(relative_path):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
 
 
 class ApplicationFormView(QDialog):
@@ -218,11 +226,14 @@ class ApplicationFormView(QDialog):
         return super().eventFilter(obj, event)
 
 
-def confirm_delete(parent=None):
+def confirm_delete(parent=None, org=None, role=None):
     reply = QMessageBox.question(
         parent,
         "Delete Application",
-        "Are you sure you want to delete this application?",
+        (
+            "Are you sure you want to delete this application for the\n"
+            f"{role if role else ''} role at {org if org else 'the organisation'}?"
+        ),
         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         QMessageBox.StandardButton.Yes,
     )

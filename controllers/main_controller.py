@@ -1,7 +1,7 @@
 """
-main_ui.py
+main_controller.py
 
-This module serves as the Controller in the MVC architecture.
+This module serves as the main controller.
 It manages the main window of the application, handles user interactions,
 coordinates data filtering, pagination,
 updating applications and highlight it on the main table.
@@ -12,13 +12,16 @@ Key Components:
 - NavigationManager: Manages pagination and result information display
 - MenuManager: Controls menu-related actions and signals
 - LogsViewer: Displays log file content in a separate window
+- SettingsUI: Provides a user interface for application settings
+- ApplicationController: Manages application-related logic and UI interactions
+- JobBoardController: Handles job board interactions and displays
+- UpdateView: Displays update information and release notes
 
 The TSAController class is the main entry point,
 tying together UI initialization and application logic.
 """
 
 import logging
-
 from PyQt6.QtGui import QColor, QBrush
 from PyQt6.QtWidgets import (
     QMainWindow,
@@ -26,8 +29,6 @@ from PyQt6.QtWidgets import (
 )
 from config import DB_PATH, SETTINGS_PATH, VERSION, RES_SETTINGS
 from models.settings_model import SettingsManager
-# from views.application_view import ApplicationFormView
-# from views.application_view import confirm_delete
 from views.main_view import MainView
 from views.navigation_view import NavigationManager
 from views.menu_view import MenuManager
@@ -40,7 +41,6 @@ from controllers.action_handlers import (
     setup_main_shortcuts,
     setup_applications_shortcuts,
     setup_main_enter_action,
-    # get_cell_text,
 )
 from controllers.jboard_controller import JobBoardController
 from utils.update_checker import fetch_latest_release
@@ -71,7 +71,6 @@ class TSAController(QMainWindow):
         self.data_manager = DataManager()
         self.conn = self.data_manager.prepare_database()
         self.data_manager.conn = self.conn
-
 
         # Initialize SettingsManager
         self.settings = SettingsManager(SETTINGS_PATH)
@@ -334,8 +333,7 @@ class TSAController(QMainWindow):
         if_only_applications = self.view.only_applications.isChecked()
         self.app_controller.show_applications_view()
         applications = self.data_manager.get_applications(
-            self.current_organisation_name,
-            self.current_city
+            self.current_organisation_name, self.current_city
         )
         self.app_controller.fill_applications_table(applications)
         self.app_controller.setup_applications_signals(
@@ -345,7 +343,7 @@ class TSAController(QMainWindow):
                 if_only_applications,
                 self.current_org_row,
                 self.current_org_col,
-                self.load_applications_page
+                self.load_applications_page,
             ),
             lambda: self.app_controller.add_application(
                 self.current_organisation_name,
@@ -366,7 +364,7 @@ class TSAController(QMainWindow):
                 if_only_applications,
                 self.current_org_row,
                 self.current_org_col,
-                self.load_applications_page
+                self.load_applications_page,
             ),
             lambda: self.app_controller.add_application(
                 self.current_organisation_name,
@@ -380,8 +378,13 @@ class TSAController(QMainWindow):
             ),
         )
         # setup_enter_action(self.view.applications_table, self.edit_application)
-        self.job_board_controller.setup_signals(
-            self.current_organisation_name
+        self.job_board_controller.setup_signals(self.current_organisation_name)
+        self.setWindowTitle(
+            (
+                f"{self.current_organisation_name} Applications"
+                if self.current_organisation_name
+                else "Applications"
+            )
         )
 
     def set_current_organisation(self, row, col):
@@ -402,6 +405,7 @@ class TSAController(QMainWindow):
         # self.current_city = None
         self.configure_table()
         self.highlight_applied_rows()
+        self.setWindowTitle("TSA - Track Sponsored Applications")
 
     def app_back_button_clicked(self):
         self.show_sponsor_table()
@@ -437,15 +441,14 @@ class TSAController(QMainWindow):
             UpdateView.show_update_popup(self, latest_version, download_url, changelog)
         else:
             logger.info(
-                "No new release available. Current version: %s",
-                current_version
+                "No new release available. Current version: %s", current_version
             )
             if show_popup:
                 UpdateView.show_changelog_popup(
                     self,
                     f"<h3>Already up to date!</h3><br>Version: <b>{VERSION}</b>",
                     "Check for New Release",
-                    (320, 240)
+                    (320, 240),
                 )
 
     # Settings
@@ -498,7 +501,7 @@ class TSAController(QMainWindow):
                 True,
                 self.current_org_row,
                 self.current_org_col,
-                self.load_applications_page
+                self.load_applications_page,
             ),
             None,
             None,

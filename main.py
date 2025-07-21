@@ -1,15 +1,10 @@
 import sys
-
-# import os
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from PyQt6.QtWidgets import QApplication, QToolTip
-from PyQt6.QtGui import QFont
-from config import SETTINGS_PATH
+from PyQt6.QtGui import QFont, QIcon
+from config import SETTINGS_PATH, ICON_PATH
 from models.settings_model import SettingsManager
 from controllers.main_controller import TSAController
 from utils.init_logger import init_logger
-
-# print(sys.path)
 
 
 def main():
@@ -20,6 +15,7 @@ def main():
 
     app = QApplication(sys.argv)
     # app.setFont(QFont('', 14))
+    app.setWindowIcon(QIcon(ICON_PATH))
     QToolTip.setFont(QFont("", 16))
     # app.setStyleSheet("QToolTip { font-size: 16px; color: #fff; background: #222; }")
     window = TSAController()

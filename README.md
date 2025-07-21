@@ -6,12 +6,13 @@
 
 TSA is a lightweight tool designed to help users track applications for UK companies offering visa sponsorships.
 It allows efficient filtering by city and organisation.
-You can create application details which includes role, date, contact and notes for each organisation.
+You can create and update application details which includes role, date, contact and notes for each organisation.
 
 ## Features
 - Filter sponsors by city and organisation.
-- Note application details for the organisations.
-- Easily track unmarked/new sponsors when the sponsor list is updated.
+- Record applications and update details for the organisations.
+- View, filter and edit all applications on main screen.
+- Open browser connections to search jobs on popular job boards, check for organisation details on glassdoor or search for organisation's career platform on google.
 - Whole pipeline can be managed by keyboard.
 - Auto new release check for TSA.
 - Cross-platform (Mac, Windows, Linux).

@@ -46,7 +46,7 @@ class MainView(QWidget):
         sponsor_layout.addWidget(self.filter_panel)
         sponsor_layout.addWidget(self.sponsor_table)
         sponsor_layout.addWidget(self.applications_table_all)
-        self.applications_table_all.setVisible(False) # Hide by default
+        self.applications_table_all.setVisible(False)  # Hide by default
         sponsor_layout.addWidget(self.sponsor_navigation_widget)
         self.sponsor_widget.setLayout(sponsor_layout)
 
