@@ -42,6 +42,7 @@ from controllers.action_handlers import (
     setup_main_enter_action,
     # get_cell_text,
 )
+from controllers.jboard_controller import JobBoardController
 from utils.update_checker import fetch_latest_release
 
 
@@ -144,6 +145,8 @@ class TSAController(QMainWindow):
         # Release check
         if self.settings.get_check_for_release():
             self.check_for_release(False)
+
+        self.job_board_controller = JobBoardController(self.view.application_view)
 
     def build_query(self):
         """
@@ -377,6 +380,9 @@ class TSAController(QMainWindow):
             ),
         )
         # setup_enter_action(self.view.applications_table, self.edit_application)
+        self.job_board_controller.setup_signals(
+            self.current_organisation_name
+        )
 
     def set_current_organisation(self, row, col):
         org_item = self.view.sponsor_table.item(row, 0)

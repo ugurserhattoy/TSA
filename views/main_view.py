@@ -40,22 +40,22 @@ class MainView(QWidget):
         self.table_applications("all")
         self.bottom_layout_sponsor()
 
-        # --- Sponsor Widget ---
+        # Sponsor Widget
         self.sponsor_widget = QWidget()
         sponsor_layout = QVBoxLayout()
         sponsor_layout.addWidget(self.filter_panel)
         sponsor_layout.addWidget(self.sponsor_table)
         sponsor_layout.addWidget(self.applications_table_all)
-        self.applications_table_all.setVisible(False)  # Başlangıçta gizli
+        self.applications_table_all.setVisible(False) # Hide by default
         sponsor_layout.addWidget(self.sponsor_navigation_widget)
         self.sponsor_widget.setLayout(sponsor_layout)
 
-        # --- Stacked Widget: Screen Transition ---
+        # Stacked Widget: Screen Transition
         self.stacked_widget = QStackedWidget()
         self.stacked_widget.addWidget(self.sponsor_widget)
-        self.stacked_widget.addWidget(self.application_view)  # YENİ
+        self.stacked_widget.addWidget(self.application_view)
 
-        # --- Main Layout ---
+        # Main Layout
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stacked_widget)
         self.setLayout(main_layout)

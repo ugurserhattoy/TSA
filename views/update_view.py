@@ -43,7 +43,7 @@ class UpdateView:
         dlg = QDialog(parent)
         dlg.setWindowTitle(title)
         layout = QVBoxLayout()
-        label = QLabel("<b>%s</b>" % title)
+        label = QLabel(f"<b>{title}</b>")
         layout.addWidget(label)
         changelog = QTextEdit()
         changelog.setReadOnly(True)

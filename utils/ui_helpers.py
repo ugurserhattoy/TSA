@@ -17,6 +17,8 @@ def button_style(color_set=None, width=None):
             color_set = ["#0A4872", "#083B5D", "#0F6198"]
         case "red":  # Red
             color_set = ["#c0392b", "#a93226", "#e74c3c"]
+        case "white":  # White
+            color_set = ["#fffffff0", "#9c9797", "#fff0f0"]
 
     return f"""
         QPushButton {{
