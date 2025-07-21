@@ -1,7 +1,7 @@
 """
-main_ui.py
+main_controller.py
 
-This module serves as the Controller in the MVC architecture.
+This module serves as the main controller.
 It manages the main window of the application, handles user interactions,
 coordinates data filtering, pagination,
 updating applications and highlight it on the main table.
@@ -12,13 +12,16 @@ Key Components:
 - NavigationManager: Manages pagination and result information display
 - MenuManager: Controls menu-related actions and signals
 - LogsViewer: Displays log file content in a separate window
+- SettingsUI: Provides a user interface for application settings
+- ApplicationController: Manages application-related logic and UI interactions
+- JobBoardController: Handles job board interactions and displays
+- UpdateView: Displays update information and release notes
 
 The TSAController class is the main entry point,
 tying together UI initialization and application logic.
 """
 
 import logging
-
 from PyQt6.QtGui import QColor, QBrush
 from PyQt6.QtWidgets import (
     QMainWindow,
@@ -26,21 +29,20 @@ from PyQt6.QtWidgets import (
 )
 from config import DB_PATH, SETTINGS_PATH, VERSION, RES_SETTINGS
 from models.settings_model import SettingsManager
-from views.application_view import ApplicationFormView
-from views.application_view import confirm_delete
 from views.main_view import MainView
 from views.navigation_view import NavigationManager
 from views.menu_view import MenuManager
 from views.logs_viewer import LogsViewer
 from views.settings_view import SettingsUI
 from views.update_view import UpdateView
+from controllers.app_controller import ApplicationController
 from controllers.data_controller import DataManager
 from controllers.action_handlers import (
     setup_main_shortcuts,
     setup_applications_shortcuts,
     setup_main_enter_action,
-    get_cell_text,
 )
+from controllers.jboard_controller import JobBoardController
 from utils.update_checker import fetch_latest_release
 
 
@@ -129,12 +131,21 @@ class TSAController(QMainWindow):
         )
         # Applications organisation city pair
         self.application_pairs: set = self.data_manager.get_applications_pairs()
+        # Initialize the application controller
+        self.app_controller = ApplicationController(
+            self.data_manager,
+            self.view,
+            self.application_pairs,
+            self.open_applications_view,
+        )
 
         self.load_data_page()  # Initial data load after UI setup
 
         # Release check
         if self.settings.get_check_for_release():
-            self.check_for_release()
+            self.check_for_release(False)
+
+        self.job_board_controller = JobBoardController(self.view.application_view)
 
     def build_query(self):
         """
@@ -211,8 +222,8 @@ class TSAController(QMainWindow):
                 self.view.applications_table_all.viewport().width()
             )
         else:
-            self.view.applications_table_view.adjust_applications_column_widths(
-                self.view.applications_table.viewport().width()
+            self.view.application_view.applications_table_view.adjust_applications_column_widths(
+                self.view.application_view.applications_table.viewport().width()
             )
 
     def apply_filter(self):
@@ -319,20 +330,62 @@ class TSAController(QMainWindow):
 
     def open_applications_view(self, row, col):
         self.set_current_organisation(row, col)
-        self.show_applications_view()
+        if_only_applications = self.view.only_applications.isChecked()
+        self.app_controller.show_applications_view()
         applications = self.data_manager.get_applications(
             self.current_organisation_name, self.current_city
         )
-        self.fill_applications_table(applications)
-        self.setup_applications_signals()
-        setup_applications_shortcuts(
-            self.view,
+        self.app_controller.fill_applications_table(applications)
+        self.app_controller.setup_applications_signals(
+            if_only_applications,
             self.app_back_button_clicked,
-            self.edit_application,
-            self.add_application,
-            self.delete_application,
+            lambda: self.app_controller.edit_application(
+                if_only_applications,
+                self.current_org_row,
+                self.current_org_col,
+                self.load_applications_page,
+            ),
+            lambda: self.app_controller.add_application(
+                self.current_organisation_name,
+                self.current_city,
+                self.current_org_row,
+                self.current_org_col,
+            ),
+            lambda: self.app_controller.delete_application(
+                self.current_org_row,
+                self.current_org_col,
+            ),
+        )
+        setup_applications_shortcuts(
+            # self.view,
+            self.view.application_view,
+            self.app_back_button_clicked,
+            lambda: self.app_controller.edit_application(
+                if_only_applications,
+                self.current_org_row,
+                self.current_org_col,
+                self.load_applications_page,
+            ),
+            lambda: self.app_controller.add_application(
+                self.current_organisation_name,
+                self.current_city,
+                self.current_org_row,
+                self.current_org_col,
+            ),
+            lambda: self.app_controller.delete_application(
+                self.current_org_row,
+                self.current_org_col,
+            ),
         )
         # setup_enter_action(self.view.applications_table, self.edit_application)
+        self.job_board_controller.setup_signals(self.current_organisation_name)
+        self.setWindowTitle(
+            (
+                f"{self.current_organisation_name} Applications"
+                if self.current_organisation_name
+                else "Applications"
+            )
+        )
 
     def set_current_organisation(self, row, col):
         org_item = self.view.sponsor_table.item(row, 0)
@@ -346,54 +399,13 @@ class TSAController(QMainWindow):
             self.current_organisation_name = None
             self.current_city = None
 
-    def fill_applications_table(self, applications, name=None):
-        suffix = f"_{name}" if name else ""
-        table = getattr(self.view, f"applications_table{suffix}")
-        table.setRowCount(len(applications))
-        for row_idx, app_row in enumerate(applications):
-            for col_idx, value in enumerate(app_row):
-                item = QTableWidgetItem(str(value))
-                if col_idx == 6 and str(value).strip():
-                    item.setToolTip(str(value))
-                table.setItem(row_idx, col_idx, item)
-
-    def setup_applications_signals(self):
-        try:
-            self.view.back_button.clicked.disconnect()
-            self.view.edit_button.clicked.disconnect()
-            self.view.add_new_button.clicked.disconnect()
-            self.view.delete_button.clicked.disconnect()
-            self.view.applications_table.cellDoubleClicked.disconnect()
-        except TypeError:
-            pass
-        if self.view.only_applications.isChecked():
-            try:
-                self.view.applications_table_all.cellDoubleClicked.disconnect()
-            except TypeError:
-                pass
-            self.view.applications_table_all.cellDoubleClicked.connect(
-                self.edit_application
-            )
-        else:
-            self.view.back_button.clicked.connect(self.app_back_button_clicked)
-            self.view.add_new_button.clicked.connect(self.add_application)
-            self.view.edit_button.clicked.connect(self.edit_application)
-            self.view.delete_button.clicked.connect(self.delete_application)
-            self.view.applications_table.cellDoubleClicked.connect(
-                self.edit_application
-            )
-
-    def show_applications_view(self):
-        self.view.applications_table_view.setup_applications_table()
-        self.view.stacked_widget.setCurrentIndex(1)
-        self.adjust_applications_col_widths()
-
     def show_sponsor_table(self):
         """Shows main table screen"""
         # self.current_organisation_name = None
         # self.current_city = None
         self.configure_table()
         self.highlight_applied_rows()
+        self.setWindowTitle("TSA - Track Sponsored Applications")
 
     def app_back_button_clicked(self):
         self.show_sponsor_table()
@@ -406,72 +418,7 @@ class TSAController(QMainWindow):
             self.view.sponsor_table.setFocus,
         )
 
-    def add_application(self):
-        """
-        Opens a dialog to add a new application for the selected organisation.
-        """
-        org = self.current_organisation_name
-        city = self.current_city
-
-        dialog = ApplicationFormView(org, city)
-        if dialog.exec():
-            data = dialog.get_form_data()
-            self.data_manager.add_application(org, city, **data)
-            self.application_pairs.add((org, city))
-            self.open_applications_view(self.current_org_row, self.current_org_col)
-
-    def edit_application(self):
-        """Opens a dialog to edit the selected application entry."""
-        table = (
-            self.view.applications_table_all
-            if self.view.only_applications.isChecked()
-            else self.view.applications_table
-        )
-        selected_row = table.currentRow()
-        if selected_row < 0:
-            return  # No Selection No Action
-
-        application_id = get_cell_text(table, selected_row, 0)
-        org = get_cell_text(table, selected_row, 1)
-        city = get_cell_text(table, selected_row, 2)
-        role = get_cell_text(table, selected_row, 3)
-        date = get_cell_text(table, selected_row, 4)
-        contact = get_cell_text(table, selected_row, 5)
-        note = get_cell_text(table, selected_row, 6)
-
-        dialog = ApplicationFormView(org, city, role, date, contact, note)
-        if dialog.exec():
-            data = dialog.get_form_data()
-            self.data_manager.update_application(application_id, org, city, **data)
-            if self.view.only_applications.isChecked():
-                self.load_applications_page()
-            else:
-                self.open_applications_view(self.current_org_row, self.current_org_col)
-
-    def delete_application(self):
-        """
-        Deletes the selected application entry.
-        """
-        table = self.view.applications_table_view.table
-        selected_row = table.currentRow()
-        if selected_row < 0:
-            return  # No Selection No Action
-        id_item = table.item(selected_row, 0)
-        if id_item is None:
-            return  # No ID found, do nothing
-        application_id = id_item.text()
-        org = table.item(selected_row, 1).text()
-        city = table.item(selected_row, 2).text()
-        role = table.item(selected_row, 3).text()
-
-        if confirm_delete(self):
-            self.data_manager.delete_application(application_id, org, role)
-            if not self.data_manager.get_applications(org, city):
-                self.application_pairs.discard((org, city))
-            # Table update
-            self.open_applications_view(self.current_org_row, self.current_org_col)
-
-    def check_for_release(self):
+    def check_for_release(self, show_popup=True):
         """
         Checks for the latest release on GitHub
         and shows popup to view release notes and download button.
@@ -492,6 +439,17 @@ class TSAController(QMainWindow):
             download_url = asset if asset else latest["html_url"]
 
             UpdateView.show_update_popup(self, latest_version, download_url, changelog)
+        else:
+            logger.info(
+                "No new release available. Current version: %s", current_version
+            )
+            if show_popup:
+                UpdateView.show_changelog_popup(
+                    self,
+                    f"<h3>Already up to date!</h3><br>Version: <b>{VERSION}</b>",
+                    "Check for New Release",
+                    (320, 240),
+                )
 
     # Settings
     def show_settings_ui(self):
@@ -521,7 +479,7 @@ class TSAController(QMainWindow):
 
     def load_applications_page(self):
         """
-        Loads the applications page with the current organisation and city.
+        Loads applications page.
         This is called when the 'Only Applications' checkbox is checked.
         """
         offset = self.current_page * self.page_size
@@ -535,8 +493,19 @@ class TSAController(QMainWindow):
         )
         self.view.applications_table_all_view.setup_applications_table()
         self.set_navigation_info(total_count)
-        self.fill_applications_table(results, "all")
-        self.setup_applications_signals()
+        self.app_controller.fill_applications_table(results, "all")
+        self.app_controller.setup_applications_signals(
+            True,
+            None,
+            lambda: self.app_controller.edit_application(
+                True,
+                self.current_org_row,
+                self.current_org_col,
+                self.load_applications_page,
+            ),
+            None,
+            None,
+        )
         self.view.show_applications_table(True)
         self.view.applications_table_all_view.adjust_applications_column_widths(
             self.view.applications_table_all.viewport().width()

@@ -3,6 +3,7 @@ import os
 
 icon_file = os.path.join('data', 'tsa_icon.icns')
 
+
 a = Analysis(
     ['main.py'],
     pathex=['.'],
@@ -10,7 +11,8 @@ a = Analysis(
     datas=[
         ('data/user_agreement.md', 'data'),
         ('LICENSE.md', '.'),
-        ('data/keybinds.md', 'data')
+        ('data/keybinds.md', 'data'),
+        ('assets/*', 'assets')
     ],
     hiddenimports=[],
     hookspath=[],

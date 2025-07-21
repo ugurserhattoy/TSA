@@ -56,8 +56,8 @@ class MenuManager(QObject):
         """
         self.create_tools_menu()
         self.create_settings_menu()
-        self.create_help_menu()  # Placeholder for future use
-        self.create_about_menu()  # Placeholder for future use
+        self.create_help_menu()
+        self.create_about_menu()
 
         self.parent.setMenuBar(self.menu_bar)
         print(

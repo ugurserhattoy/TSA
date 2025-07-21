@@ -32,7 +32,8 @@ a = Analysis(
     datas=[
         ('data/user_agreement.md', 'data'),
         ('LICENSE.md', '.'),
-        ('data/keybinds.md', 'data')
+        ('data/keybinds.md', 'data'),
+        ('assets/*', 'assets')
     ],
     hiddenimports=[],
     hookspath=[],
